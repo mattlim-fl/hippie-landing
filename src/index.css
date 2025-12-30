@@ -1,0 +1,335 @@
+/* 
+  Hippie Club Font Face Declarations
+*/
+@font-face {
+  font-family: 'Blur';
+  src: url('/fonts/BlurWeb-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Acumin Variable';
+  src: url('/fonts/AcuminVariable.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Hide scrollbars globally while keeping scroll functionality */
+  * {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+
+  html,
+  body {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB BUTTON STYLES
+   ============================================ */
+@layer components {
+  /* Primary button - Gold filled */
+  .hippie-btn-primary {
+    @apply bg-hippie-gold text-hippie-green-dark font-display font-bold 
+           px-8 py-3 uppercase tracking-wider 
+           transition-all duration-300 
+           hover:bg-hippie-gold-dark hover:scale-105 
+           active:scale-95 
+           rounded-full;
+  }
+
+  /* Secondary button - Outlined */
+  .hippie-btn-secondary {
+    @apply bg-transparent border-2 border-hippie-white text-hippie-white 
+           font-display font-bold px-8 py-3 uppercase tracking-wider 
+           transition-all duration-300 
+           hover:bg-hippie-white hover:text-hippie-charcoal 
+           rounded-full;
+  }
+
+  /* Pill button style - used for navigation items */
+  .hippie-btn-pill {
+    @apply bg-hippie-coral text-hippie-white 
+           font-display font-bold px-6 py-2 
+           uppercase tracking-wider 
+           transition-all duration-300 
+           hover:brightness-110 hover:scale-105 
+           active:scale-95 
+           rounded-full;
+  }
+
+  /* Date pill button - for photo date list */
+  .hippie-btn-date {
+    @apply bg-hippie-white text-hippie-charcoal 
+           font-display font-bold px-8 py-3 
+           uppercase tracking-wider 
+           transition-all duration-300 
+           hover:bg-hippie-gold hover:text-hippie-green-dark 
+           rounded-full border-2 border-hippie-white;
+  }
+
+  .hippie-btn-date-active {
+    @apply bg-hippie-gold text-hippie-green-dark 
+           font-display font-bold px-8 py-3 
+           uppercase tracking-wider 
+           rounded-full border-2 border-hippie-gold;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB TYPOGRAPHY
+   ============================================ */
+@layer components {
+  .hippie-heading {
+    @apply font-display font-bold uppercase tracking-wider;
+  }
+
+  .hippie-display {
+    @apply font-display font-bold text-4xl md:text-6xl lg:text-7xl uppercase tracking-wider;
+  }
+
+  .hippie-title {
+    @apply font-display font-bold text-2xl md:text-3xl uppercase tracking-wide;
+  }
+
+  .hippie-body {
+    @apply font-body text-base leading-relaxed;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB PAGE TITLE BADGE
+   ============================================ */
+@layer components {
+  .hippie-page-title {
+    @apply inline-block bg-hippie-green-dark text-hippie-white 
+           font-display font-bold text-xl md:text-2xl 
+           px-8 py-3 uppercase tracking-wider 
+           rounded-full border-2 border-hippie-white/30;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB BACKGROUND PATTERNS
+   ============================================ */
+@layer components {
+  /* Dark charcoal swirl background - Photos, Karaoke pages */
+  .bg-pattern-dark {
+    @apply bg-hippie-charcoal;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% 50%, transparent 30%, rgba(42, 42, 42, 0.6) 70%),
+      radial-gradient(ellipse 60% 40% at 30% 30%, rgba(42, 42, 42, 0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 45% at 70% 70%, rgba(42, 42, 42, 0.4) 0%, transparent 60%);
+  }
+
+  /* Teal/green swirl background - Guest List, 25+ Priority pages */
+  .bg-pattern-teal {
+    @apply bg-hippie-teal;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% 50%, transparent 30%, rgba(21, 90, 74, 0.6) 70%),
+      radial-gradient(ellipse 60% 40% at 30% 30%, rgba(21, 90, 74, 0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 45% at 70% 70%, rgba(21, 90, 74, 0.4) 0%, transparent 60%);
+  }
+
+  /* Coral/red swirl background - Venue Hire page */
+  .bg-pattern-coral {
+    @apply bg-hippie-coral;
+    background-image: 
+      radial-gradient(ellipse 80% 50% at 50% 50%, transparent 30%, rgba(201, 74, 64, 0.6) 70%),
+      radial-gradient(ellipse 60% 40% at 30% 30%, rgba(201, 74, 64, 0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 70% 45% at 70% 70%, rgba(201, 74, 64, 0.4) 0%, transparent 60%);
+  }
+
+  /* Collage background - Home page only */
+  .bg-pattern-collage {
+    @apply bg-hippie-gold;
+    /* This will be overlaid with actual collage images */
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB SWIRL SVG BACKGROUND
+   ============================================ */
+@layer utilities {
+  .bg-swirl-dark {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1200'%3E%3Cpath fill='none' stroke='%232a2a2a' stroke-width='40' d='M400,100 Q600,200 550,400 Q500,600 400,600 Q300,600 250,400 Q200,200 400,100'/%3E%3Cpath fill='none' stroke='%232a2a2a' stroke-width='35' d='M400,200 Q550,280 510,420 Q470,560 400,560 Q330,560 290,420 Q250,280 400,200'/%3E%3Cpath fill='none' stroke='%232a2a2a' stroke-width='30' d='M400,300 Q500,360 470,440 Q440,520 400,520 Q360,520 330,440 Q300,360 400,300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
+  .bg-swirl-teal {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1200'%3E%3Cpath fill='none' stroke='%23155a4a' stroke-width='40' d='M400,100 Q600,200 550,400 Q500,600 400,600 Q300,600 250,400 Q200,200 400,100'/%3E%3Cpath fill='none' stroke='%23155a4a' stroke-width='35' d='M400,200 Q550,280 510,420 Q470,560 400,560 Q330,560 290,420 Q250,280 400,200'/%3E%3Cpath fill='none' stroke='%23155a4a' stroke-width='30' d='M400,300 Q500,360 470,440 Q440,520 400,520 Q360,520 330,440 Q300,360 400,300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+
+  .bg-swirl-coral {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 1200'%3E%3Cpath fill='none' stroke='%23c94a40' stroke-width='40' d='M400,100 Q600,200 550,400 Q500,600 400,600 Q300,600 250,400 Q200,200 400,100'/%3E%3Cpath fill='none' stroke='%23c94a40' stroke-width='35' d='M400,200 Q550,280 510,420 Q470,560 400,560 Q330,560 290,420 Q250,280 400,200'/%3E%3Cpath fill='none' stroke='%23c94a40' stroke-width='30' d='M400,300 Q500,360 470,440 Q440,520 400,520 Q360,520 330,440 Q300,360 400,300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB STARBURST GRAPHIC
+   ============================================ */
+@layer components {
+  .hippie-starburst {
+    @apply relative inline-flex items-center justify-center;
+  }
+
+  .hippie-starburst::before {
+    content: '';
+    @apply absolute inset-0 bg-hippie-gold;
+    clip-path: polygon(
+      50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%
+    );
+  }
+
+  .hippie-starburst-text {
+    @apply relative z-10 font-display font-bold text-hippie-green-dark 
+           uppercase text-center leading-tight px-4 py-2;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB ACCORDION STYLES
+   ============================================ */
+@layer components {
+  .hippie-accordion-trigger {
+    @apply w-full flex items-center justify-between 
+           py-4 font-display font-bold uppercase tracking-wide 
+           border-b border-hippie-gold/50 
+           transition-colors hover:text-hippie-gold;
+  }
+
+  .hippie-accordion-content {
+    @apply py-4 font-body text-sm leading-relaxed;
+  }
+}
+
+/* ============================================
+   HIPPIE CLUB NAVIGATION ARROWS
+   ============================================ */
+@layer components {
+  .hippie-nav-arrow {
+    @apply w-12 h-12 rounded-full bg-hippie-gold 
+           flex items-center justify-center 
+           text-hippie-green-dark text-2xl font-bold 
+           transition-all duration-300 
+           hover:scale-110 hover:brightness-110 
+           active:scale-95 cursor-pointer;
+  }
+}

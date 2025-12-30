@@ -1,0 +1,121 @@
+Package Report
+
+-----------------------------------------------------------------------------
+Document:
+Name: The Hippie Club - Website Art 1.ai
+Color Mode: CMYK color
+Color Profile: none
+Ruler Units: pixels
+Artboard Dimensions: 1600 px x 2755.2332 px
+Show Images in Outline Mode: OFF
+Highlight Substituted Fonts: OFF
+Highlight Substituted Glyphs: OFF
+Preserve Text Editability
+Simulate Colored Paper: OFF
+
+-----------------------------------------------------------------------------
+Spot Color Objects:
+PANTONE 136 C (Lab)
+PANTONE 2348 C (Lab)
+PANTONE 330 C (Lab)
+PANTONE 9064 C (Lab)
+
+-----------------------------------------------------------------------------
+Missing Fonts:NONE
+
+-----------------------------------------------------------------------------
+Protected Fonts that were not packaged:NONE
+
+-----------------------------------------------------------------------------
+Fonts:
+Acumin Variable Concept SemiCondensed Black (OTF)
+Acumin Variable Concept Condensed UltraBlack (OTF)
+Acumin Variable Concept Semibold (OTF)
+BlurWeb-Bold W03 Regular (TrueType)
+
+-----------------------------------------------------------------------------
+Embedded Fonts:
+NONE
+
+-----------------------------------------------------------------------------
+Missing Links:
+
+/Users/brettlayton/Desktop/Screenshot 2025-12-03 at 4.14.55pm.png
+Type: Other
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hippie Club - Website/CONCEPTS/IMAGES/Gallery-Images.png
+Type: Other
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hippie Club - Website/CONCEPTS/IMAGES/Gallery-Images.png
+Type: Other
+
+/Users/brettlayton/Desktop/Screenshot 2025-12-03 at 4.14.55pm.png
+Type: Other
+
+/Users/brettlayton/Desktop/Screenshot 2025-12-03 at 4.11.31pm.png
+Type: Other
+
+-----------------------------------------------------------------------------
+Linked Images:
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hip-E Club - Interim Identity & Materials/FINISHED ART/IMAGES/The Hip-E Club - Collage A.psd
+Type: RGB
+Bits per Pixel: 24
+Channels: 3
+Size: 2615K, 1181 by 756 pixels
+Dimensions: 1968.902 by 1383.636 points 
+Resolution: 43.188 by 39.34 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hip-E Club - Interim Identity & Materials/FINISHED ART/IMAGES/The Hip-E Club - Collage A.psd
+Type: RGB
+Bits per Pixel: 24
+Channels: 3
+Size: 2615K, 1181 by 756 pixels
+Dimensions: 2003.887 by 1408.222 points 
+Resolution: 42.434 by 38.653 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/Manor/Manor - Website/CONCEPTS/IMAGES/Screenshot 2025-12-02 at 9.20.38pm
+Type: Transparent RGB
+Bits per Pixel: 32
+Channels: 4
+Size: 7660K, 1618 by 1212 pixels
+Dimensions: 849.03 by 635.986 points 
+Resolution: 137.211 by 137.211 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/Manor/Manor - Website/CONCEPTS/IMAGES/Screenshot 2025-12-02 at 9.19.58pm
+Type: Transparent RGB
+Bits per Pixel: 32
+Channels: 4
+Size: 7767K, 1220 by 1630 pixels
+Dimensions: 398.146 by 587.88 points 
+Resolution: 220.623 by 199.633 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/Manor/Manor - Website/CONCEPTS/IMAGES/Screenshot 2025-12-02 at 9.20.52pm
+Type: Transparent RGB
+Bits per Pixel: 32
+Channels: 4
+Size: 6830K, 1078 by 1622 pixels
+Dimensions: 390.902 by 588.167 points 
+Resolution: 198.556 by 198.556 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hip-E Club - Interim Identity & Materials/FINISHED ART/IMAGES/The Hip-E Club - Collage A.psd
+Type: RGB
+Bits per Pixel: 24
+Channels: 3
+Size: 2615K, 1181 by 756 pixels
+Dimensions: 1968.902 by 1383.636 points 
+Resolution: 43.188 by 39.34 pixels per inch
+
+
+/Users/brettlayton/Dropbox/TwofromTwo/The Hippie Club Precinct/The Hip-E Club - Interim Identity & Materials/FINISHED ART/IMAGES/The Hip-E Club - Collage A.psd
+Type: RGB
+Bits per Pixel: 24
+Channels: 3
+Size: 2615K, 1181 by 756 pixels
+Dimensions: 2003.887 by 1408.222 points 
+Resolution: 42.434 by 38.653 pixels per inch

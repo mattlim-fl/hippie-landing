@@ -1,0 +1,95 @@
+---
+description: Hippie Club Website Development Guidelines
+globs: ["**/*.tsx", "**/*.ts", "**/*.css"]
+---
+
+# Hippie Club Website - Development Guidelines
+
+## Project Context
+
+This is the Hippie Club (Hip-E Club) nightclub website - a promotional and booking platform for a Perth, WA nightclub with a retro/70s disco aesthetic.
+
+## Documentation
+
+- **PRD:** `docs/PRD.md` - Full product requirements and design specifications
+- **Designs:** `docs/hippie-designs/` - JPEG mockups for each page
+- **Assets:** `docs/hippie-assets/` - Fonts, logos, and brand assets
+
+## Tech Stack
+
+- React 18+ with TypeScript
+- Vite for build tooling
+- Tailwind CSS for styling
+- shadcn/ui for base components
+- React Router v6 for navigation
+- TanStack Query for data fetching
+
+## Brand Colors
+
+Use these Tailwind color tokens defined in `tailwind.config.ts`:
+
+```
+hippie.charcoal     - #1a1a1a (dark backgrounds)
+hippie.teal         - #1b6b5a (green backgrounds)
+hippie.coral        - #e85a4f (red backgrounds)
+hippie.gold         - #f5b642 (accents, buttons)
+hippie.greenDark    - #2d5a4a (header pills, page titles)
+hippie.white        - #ffffff (text on dark)
+hippie.cream        - #f5f0e6 (light text alternative)
+```
+
+## Typography
+
+- **Headings/Display:** `font-display` (Blur Web Bold)
+- **Body:** `font-body` (Acumin Variable)
+
+## File Structure Conventions
+
+```
+src/
+├── components/
+│   ├── layout/      # Header, Footer, PageLayout, PageTitle
+│   └── ui/          # shadcn/ui components
+├── pages/           # Route page components
+├── hooks/           # Custom React hooks
+├── lib/             # Utilities and helpers
+└── assets/          # Static assets (images, icons)
+```
+
+## Component Guidelines
+
+1. **Layout Components:** All pages should use `PageLayout` wrapper which provides:
+   - Header with logo and social links
+   - Footer with contact info
+   - Background pattern variant
+
+2. **Page Titles:** Use `PageTitle` component for the rounded pill page headers
+
+3. **Buttons:** Use the pre-defined button classes:
+   - `hippie-btn-primary` - Gold filled button
+   - `hippie-btn-secondary` - Outlined button
+   - `hippie-btn-pill` - Rounded pill style
+
+## Background Variants
+
+Pages use one of three background patterns:
+- `bg-pattern-dark` - Charcoal with swirls (Photos, Karaoke)
+- `bg-pattern-teal` - Green with swirls (Guest List, 25+ Priority)
+- `bg-pattern-coral` - Red with swirls (Venue Hire)
+
+## Coding Conventions
+
+1. Use TypeScript for all components
+2. Prefer functional components with hooks
+3. Use Tailwind classes over custom CSS when possible
+4. Follow mobile-first responsive design
+5. Keep components small and focused
+6. Extract reusable logic into custom hooks
+
+## Accessibility
+
+- Use semantic HTML elements
+- Include alt text for all images
+- Ensure proper heading hierarchy (h1 > h2 > h3)
+- Support keyboard navigation
+- Maintain sufficient color contrast
