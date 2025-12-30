@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { PageLayout, PageTitle } from "@/components/layout";
+import { PriorityBookingModal } from "@/components/PriorityBookingModal";
 
 const Priority = () => {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
   return (
     <PageLayout background="teal">
       <div className="flex-1 flex flex-col items-center px-4 py-8">
@@ -20,12 +24,12 @@ const Priority = () => {
           </p>
 
           {/* CTA Button */}
-          <a
-            href="mailto:afterdark@themanorleederville.com.au?subject=25+ Priority Booking"
+          <button
+            onClick={() => setIsBookingModalOpen(true)}
             className="hippie-btn-primary"
           >
             Book Now
-          </a>
+          </button>
         </div>
 
         {/* Venue Photo */}
@@ -44,6 +48,12 @@ const Priority = () => {
           </div>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <PriorityBookingModal 
+        isOpen={isBookingModalOpen} 
+        onClose={() => setIsBookingModalOpen(false)} 
+      />
     </PageLayout>
   );
 };

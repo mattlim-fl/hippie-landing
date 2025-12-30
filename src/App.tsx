@@ -12,6 +12,8 @@ import GuestList from "./pages/GuestList";
 import VenueHire from "./pages/VenueHire";
 import Priority from "./pages/Priority";
 import Karaoke from "./pages/Karaoke";
+import GroupTicketPage from "./pages/GroupTicketPage";
+import ManageGuestList from "./pages/ManageGuestList";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,9 @@ const App = () => (
           <Route path="/venue-hire" element={<VenueHire />} />
           <Route path="/25-priority" element={<Priority />} />
           <Route path="/karaoke" element={<Karaoke />} />
+          <Route path="/tickets/:token" element={<GroupTicketPage />} />
+          <Route path="/guest-list/edit" element={<ManageGuestList />} />
+          <Route path="/manage-guests" element={<ManageGuestList />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
