@@ -12,6 +12,7 @@ export interface Occasion {
   customer_name: string | null // organiser name
   customer_email: string | null
   customer_phone: string | null
+  guest_list_token: string | null
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
 }
 

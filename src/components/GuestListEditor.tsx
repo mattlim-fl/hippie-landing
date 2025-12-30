@@ -115,7 +115,7 @@ export default function GuestListEditor({
         // Fetch booking to get max guests and booking details
         const { data: booking, error: bookingError } = await supabase
           .from('bookings')
-          .select('ticket_quantity, guest_count, reference_code, booking_date, start_time, end_time, karaoke_booth_id, share_token')
+          .select('ticket_quantity, guest_count, reference_code, booking_date, start_time, end_time, karaoke_booth_id, share_token, booking_type, is_occasion_organiser, capacity')
           .eq('id', bookingId)
           .single()
 
@@ -123,7 +123,11 @@ export default function GuestListEditor({
           throw bookingError
         }
 
-        const ticketQty = booking?.ticket_quantity || booking?.guest_count || 0
+        // For occasion organiser bookings, use capacity instead of ticket_quantity
+        const isOccasionOrganiser = booking?.booking_type === 'occasion' && booking?.is_occasion_organiser === true
+        const ticketQty = isOccasionOrganiser 
+          ? (booking?.capacity || 0)
+          : (booking?.ticket_quantity || booking?.guest_count || 0)
         const hasToken = Boolean(booking?.share_token)
         const tokenValue = booking?.share_token || null
 
@@ -159,8 +163,11 @@ export default function GuestListEditor({
         }))
 
         // Check if organiser exists - if so, max = ticketQty + 1 (organiser + guests)
+        // For occasion organiser bookings, capacity already includes all guests, so don't add 1
         const hasOrganiser = existingGuests.some((g) => g.isOrganiser)
-        const max = hasOrganiser ? ticketQty + 1 : ticketQty
+        const max = isOccasionOrganiser 
+          ? ticketQty  // Capacity already represents total guests
+          : (hasOrganiser ? ticketQty + 1 : ticketQty)
 
         // Fetch linked bookings (guests who used the share link)
         let linked: LinkedBooking[] = []

@@ -5,7 +5,7 @@ import { Loader2, AlertCircle, Calendar, Users, Copy, Check, Share2 } from 'luci
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import GuestListEditor from '../components/GuestListEditor'
-import { fetchOccasionByOrganiserToken, fetchOrganiserBooking, OccasionWithStats } from '../services/occasion'
+import { fetchOccasionByOrganiserToken, OccasionWithStats } from '../services/occasion'
 import PageLayout from '../components/layout/PageLayout'
 import PageTitle from '../components/layout/PageTitle'
 
@@ -14,7 +14,6 @@ export default function OccasionPage() {
 
   const [loading, setLoading] = useState(true)
   const [occasion, setOccasion] = useState<OccasionWithStats | null>(null)
-  const [organiserBooking, setOrganiserBooking] = useState<any | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copiedShare, setCopiedShare] = useState(false)
 
@@ -37,12 +36,6 @@ export default function OccasionPage() {
         setError('This link is invalid or has expired')
       } else {
         setOccasion(occasionData)
-        
-        // Try to fetch organiser's booking if they have an email
-        if (occasionData.customer_email) {
-          const booking = await fetchOrganiserBooking(occasionData.id, occasionData.customer_email)
-          setOrganiserBooking(booking)
-        }
       }
     } catch (err) {
       setError('Failed to load occasion details')
@@ -103,7 +96,7 @@ export default function OccasionPage() {
   return (
     <PageLayout variant="dark">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <PageTitle>{occasion.name}</PageTitle>
+        <PageTitle>{occasion.occasion_name}</PageTitle>
 
         <div className="space-y-6 mt-8">
           {/* Info Card */}
@@ -180,13 +173,13 @@ export default function OccasionPage() {
           </div>
 
           {/* Guest List Editor */}
-          {organiserBooking && organiserBooking.guest_list_token && (
+          {occasion && occasion.guest_list_token && (
             <div className="bg-hippie-charcoal/50 backdrop-blur-sm border border-hippie-gold/20 rounded-2xl p-6">
               <GuestListEditor
-                bookingId={organiserBooking.id}
-                token={organiserBooking.guest_list_token}
+                bookingId={occasion.id}
+                token={occasion.guest_list_token}
                 heading="Your Guest List"
-                subheading="Add the names of your guests so they're on the door when they arrive."
+                subheading="Manage your guest list and see who has purchased tickets. Add complimentary guests or view guests from purchased tickets."
                 showLinkedBookings={true}
               />
             </div>
