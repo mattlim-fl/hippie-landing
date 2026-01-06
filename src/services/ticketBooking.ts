@@ -10,6 +10,10 @@ export interface TicketGroup {
   parentBookingId: string
 }
 
+/**
+ * Fetches ticket group details by share token.
+ * Used for group ticket purchase page to display organizer info.
+ */
 export async function fetchTicketGroup(token: string): Promise<TicketGroup | null> {
   const supabase = getSupabase()
   
@@ -39,9 +43,10 @@ export interface CreatePaidTicketBookingInput {
   venue: Venue
   bookingDate: string // YYYY-MM-DD (ignored if groupToken is provided)
   ticketQuantity: number
-  ticketType?: 'priority_25_plus' | 'general_admission'
+  ticketType?: 'priority_25_plus' | 'general_admission' | 'occasion'
   paymentToken: string // Square payment token
   groupToken?: string // Optional: for guest purchases via shared link
+  parentBookingId?: string // Optional: for occasion ticket purchases
 }
 
 export interface PaidTicketBookingResult {
@@ -53,6 +58,11 @@ export interface PaidTicketBookingResult {
   shareUrl?: string // Only for organiser purchases
 }
 
+/**
+ * Creates a paid ticket booking with Square payment processing.
+ * Supports: priority entry, general admission, occasion/group tickets.
+ * Returns booking reference and guest list token for entry.
+ */
 export async function createPaidTicketBooking(input: CreatePaidTicketBookingInput): Promise<PaidTicketBookingResult> {
   const supabase = getSupabase()
 
@@ -75,6 +85,7 @@ export async function createPaidTicketBooking(input: CreatePaidTicketBookingInpu
       ticketType: input.ticketType || 'priority_25_plus',
       paymentToken: input.paymentToken,
       groupToken: input.groupToken,
+      parentBookingId: input.parentBookingId,
     }
   })
 
@@ -98,4 +109,7 @@ export async function createPaidTicketBooking(input: CreatePaidTicketBookingInpu
     shareUrl: raw.shareUrl ? String(raw.shareUrl) : undefined,
   }
 }
+
+
+
 

@@ -114,7 +114,7 @@ The Hippie Club website is a promotional and booking platform for Hip-E Club, a 
 ---
 
 ### 2.6 25+ Priority Page
-**Route:** `/25-priority`
+**Route:** `/priority`
 
 **Purpose:** Promote priority entry for 25+ crowd.
 
@@ -143,6 +143,57 @@ The Hippie Club website is a promotional and booking platform for Hip-E Club, a 
 
 **Design Notes:**
 - Dark charcoal background with swirling pattern
+
+---
+
+### 2.8 Group Ticket Page
+**Route:** `/group/:token`
+
+**Purpose:** Allow group members to purchase tickets for an occasion package.
+
+**Features:**
+- Display occasion details (organizer name, date, venue)
+- Ticket purchase form with quantity selector
+- Square payment integration
+- Confirmation with booking reference
+
+**Design Notes:**
+- Teal/green background with swirling pattern
+- Follows standard booking modal patterns
+
+---
+
+### 2.9 Occasion Buy Page
+**Route:** `/occasion/buy/:token`
+
+**Purpose:** Guest ticket purchase flow for birthday/occasion packages.
+
+**Features:**
+- Occasion package details
+- Guest information form
+- Payment processing
+- Email confirmation
+
+**Design Notes:**
+- Consistent with other booking flows
+- Mobile-responsive design
+
+---
+
+### 2.10 Occasion Organiser Page
+**Route:** `/occasion/:token`
+
+**Purpose:** Organizer dashboard to manage guest list and view bookings.
+
+**Features:**
+- Guest list management (add/remove guests)
+- Share link generation for group tickets
+- Booking summary and details
+- Guest RSVP status tracking
+
+**Design Notes:**
+- Admin-style interface
+- Table/list view for guest management
 
 ---
 
@@ -234,4 +285,7 @@ The Hippie Club website is a promotional and booking platform for Hip-E Club, a 
 - Event calendar
 - Email newsletter signup
 - Integration with ticketing system
+
+
+
 

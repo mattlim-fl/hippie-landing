@@ -62,9 +62,9 @@ export function getSessionId(): string {
 }
 
 /**
- * Convert HH:MM to minutes, treating early morning hours (before 06:00) as
- * belonging to the previous night for sorting purposes.
- * This makes 23:00 < 00:00 < 01:00 in sort order.
+ * Convert HH:MM to minutes for nightlife time sorting.
+ * Treats 00:00-05:59 as next day (24:00-29:59) so they sort after 23:xx.
+ * Example: 23:00 < 00:00 < 01:00 in sort order.
  */
 function nightlifeMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number)
@@ -91,6 +91,11 @@ function normalizeSlots(slots: any[]): TimeSlot[] {
   return mapped.sort((a, b) => nightlifeMinutes(a.start_time) - nightlifeMinutes(b.start_time))
 }
 
+/**
+ * Normalizes various API response shapes into consistent AvailabilityResponse format.
+ * Handles: { slots: [...] }, { booths: [...] }, or raw array.
+ * Ensures time slots are sorted in nightlife order.
+ */
 async function normalizeAvailability(raw: any, meta: { date: string; venue: Venue }): Promise<AvailabilityResponse> {
   // Handle shape: { slots: [{ startTime, endTime, available }] }
   if (raw && Array.isArray(raw.slots)) {
@@ -129,6 +134,10 @@ async function normalizeAvailability(raw: any, meta: { date: string; venue: Venu
   return { date: meta.date, venue: meta.venue, booths: [] }
 }
 
+/**
+ * Fetches karaoke booth availability for a given date and venue.
+ * Returns booths with available time slots sorted in nightlife order.
+ */
 export async function fetchKaraokeAvailability(params: { venue: Venue; date: string; partySize?: number }): Promise<AvailabilityResponse> {
   const supabase = getSupabase()
   const payload: Record<string, unknown> = {
@@ -149,6 +158,10 @@ export async function fetchKaraokeAvailability(params: { venue: Venue; date: str
   return await normalizeAvailability(raw, { date: params.date, venue: params.venue })
 }
 
+/**
+ * Fetches available booths for a specific time slot.
+ * Used when user selects a time slot to show booth options with pricing.
+ */
 export async function fetchBoothsForSlot(params: { venue: Venue; bookingDate: string; startTime: string; endTime: string; minCapacity: number }): Promise<SlotBooth[]> {
   const supabase = getSupabase()
   const payload: Record<string, unknown> = {
@@ -176,6 +189,10 @@ export async function fetchBoothsForSlot(params: { venue: Venue; bookingDate: st
   return res as SlotBooth[]
 }
 
+/**
+ * Creates a temporary hold on a booth time slot (expires in 5 minutes).
+ * Hold is tied to session ID to prevent conflicts during checkout.
+ */
 export async function createKaraokeHold(input: CreateHoldInput): Promise<CreateHoldResult> {
   const supabase = getSupabase()
   const sessionId = getSessionId()
@@ -205,6 +222,10 @@ export async function createKaraokeHold(input: CreateHoldInput): Promise<CreateH
   return { hold_id: holdId, expires_at: expiresAt }
 }
 
+/**
+ * Releases a hold when user cancels or navigates away.
+ * Makes the time slot available for other users.
+ */
 export async function releaseKaraokeHold(holdId: string): Promise<{ success: boolean }> {
   const supabase = getSupabase()
   const sessionId = getSessionId()
@@ -240,6 +261,11 @@ export interface PayAndBookResult {
   ticket_booking?: { id: string; referenceCode: string } | null
 }
 
+/**
+ * Processes payment and creates confirmed karaoke booking.
+ * Converts hold to booking, charges card via Square, sends confirmation email.
+ * Returns booking ID, reference code, and optional guest list token.
+ */
 export async function payAndBookKaraoke(input: PayAndBookInput): Promise<PayAndBookResult> {
   const supabase = getSupabase()
   const sessionId = getSessionId()
