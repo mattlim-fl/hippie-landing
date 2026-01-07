@@ -1,18 +1,32 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageLayout, PageTitle } from "@/components/layout";
-
-// Sample dates - in production these would come from an API
-const eventDates = [
-  { date: "2025-11-22", label: "22 November 2025", isLatest: true },
-  { date: "2025-11-15", label: "15 November 2025", isLatest: false },
-  { date: "2025-11-08", label: "8 November 2025", isLatest: false },
-  { date: "2025-11-01", label: "1 November 2025", isLatest: false },
-  { date: "2025-10-16", label: "16 October 2025", isLatest: false },
-  { date: "2025-10-09", label: "9 October 2025", isLatest: false },
-  { date: "2025-10-02", label: "2 October 2025", isLatest: false },
-];
+import { getPublicAlbums, PhotoAlbum } from "@/services/photoService";
+import { formatEventDate } from "@/lib/utils";
 
 const Photos = () => {
+  const [albums, setAlbums] = useState<PhotoAlbum[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchAlbums = async () => {
+      try {
+        setLoading(true);
+        const data = await getPublicAlbums('hippie');
+        setAlbums(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch albums:', err);
+        setError('Failed to load photo albums');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAlbums();
+  }, []);
+
   return (
     <PageLayout background="dark">
       <div className="flex-1 flex flex-col items-center px-4 py-8">
@@ -26,15 +40,37 @@ const Photos = () => {
 
         {/* Date List */}
         <div className="w-full max-w-md space-y-3 mb-12">
-          {eventDates.map((event) => (
-            <Link
-              key={event.date}
-              to={`/photos/${event.date}`}
-              className={event.isLatest ? "hippie-btn-date-active w-full block text-center" : "hippie-btn-date w-full block text-center"}
-            >
-              {event.label}
-            </Link>
-          ))}
+          {loading ? (
+            // Loading skeleton
+            <>
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-12 bg-hippie-charcoal-light/50 rounded-full animate-pulse"
+                />
+              ))}
+            </>
+          ) : error ? (
+            <p className="text-hippie-coral text-center py-4">{error}</p>
+          ) : albums.length === 0 ? (
+            <p className="text-hippie-white/60 text-center py-4">
+              No photo albums available yet. Check back soon!
+            </p>
+          ) : (
+            albums.map((album, index) => (
+              <Link
+                key={album.id}
+                to={`/photos/${album.event_date}`}
+                className={
+                  index === 0
+                    ? "hippie-btn-date-active w-full block text-center"
+                    : "hippie-btn-date w-full block text-center"
+                }
+              >
+                {formatEventDate(album.event_date)}
+              </Link>
+            ))
+          )}
         </div>
 
         {/* Venue Photo with Spinning Text */}
@@ -59,7 +95,3 @@ const Photos = () => {
 };
 
 export default Photos;
-
-
-
-

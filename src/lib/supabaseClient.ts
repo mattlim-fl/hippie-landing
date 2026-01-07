@@ -25,6 +25,13 @@ export const getSupabase = (): SupabaseClient => {
   return cached
 }
 
+/**
+ * Get the Supabase URL from configuration
+ */
+export const getSupabaseUrl = (): string => {
+  return getConfig().url
+}
+
 export default getSupabase
 
 

@@ -1,29 +1,44 @@
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { PageLayout, PageTitle } from "@/components/layout";
-
-// Sample photos - in production these would come from an API
-const samplePhotos = Array.from({ length: 20 }, (_, i) => ({
-  id: i + 1,
-  src: `/placeholder.svg`,
-  alt: `Party photo ${i + 1}`,
-}));
+import { getPhotosByDate, PhotoAlbumImage } from "@/services/photoService";
+import { formatEventDate } from "@/lib/utils";
 
 const PhotoGallery = () => {
   const { date } = useParams<{ date: string }>();
+  const [photos, setPhotos] = useState<PhotoAlbumImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Format the date for display
-  const formatDate = (dateString: string | undefined) => {
-    if (!dateString) return "Photos";
-    try {
-      const dateObj = new Date(dateString);
-      return dateObj.toLocaleDateString("en-AU", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-    } catch {
-      return dateString;
-    }
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!date) return;
+      
+      try {
+        setLoading(true);
+        const data = await getPhotosByDate('hippie', date);
+        setPhotos(data);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch photos:', err);
+        setError('Failed to load photos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhotos();
+  }, [date]);
+
+  const getRotationClass = (index: number) => {
+    const rotations = [
+      "rotate-[-2deg]",
+      "rotate-[1deg]",
+      "rotate-[-1deg]",
+      "rotate-[2deg]",
+      "rotate-[-1.5deg]",
+    ];
+    return rotations[index % 5];
   };
 
   return (
@@ -37,31 +52,65 @@ const PhotoGallery = () => {
           >
             ← Back
           </Link>
-          <PageTitle>{formatDate(date)}</PageTitle>
+          <PageTitle>{formatEventDate(date)}</PageTitle>
           <div className="w-16" /> {/* Spacer for alignment */}
         </div>
 
         {/* Photo Grid */}
-        <div className="w-full max-w-6xl grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {samplePhotos.map((photo, index) => (
-            <div
-              key={photo.id}
-              className={`
-                aspect-[3/4] bg-hippie-charcoal-light rounded-lg overflow-hidden
-                transform transition-transform hover:scale-105 hover:z-10
-                ${index % 5 === 0 ? "rotate-[-2deg]" : ""}
-                ${index % 5 === 1 ? "rotate-[1deg]" : ""}
-                ${index % 5 === 2 ? "rotate-[-1deg]" : ""}
-                ${index % 5 === 3 ? "rotate-[2deg]" : ""}
-                ${index % 5 === 4 ? "rotate-[-1.5deg]" : ""}
-              `}
-            >
-              {/* Placeholder - replace with actual images */}
-              <div className="w-full h-full flex items-center justify-center text-hippie-white/30 text-xs">
-                Photo {photo.id}
-              </div>
+        <div className="w-full max-w-6xl">
+          {loading ? (
+            // Loading skeleton
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {[...Array(15)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`aspect-[3/4] bg-hippie-charcoal-light/50 rounded-lg animate-pulse ${getRotationClass(i)}`}
+                />
+              ))}
             </div>
-          ))}
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-hippie-coral mb-4">{error}</p>
+              <Link
+                to="/photos"
+                className="text-hippie-gold hover:underline"
+              >
+                Back to albums
+              </Link>
+            </div>
+          ) : photos.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-hippie-white/60 mb-4">
+                No photos in this album yet.
+              </p>
+              <Link
+                to="/photos"
+                className="text-hippie-gold hover:underline"
+              >
+                Back to albums
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {photos.map((photo, index) => (
+                <div
+                  key={photo.id}
+                  className={`
+                    aspect-[3/4] bg-hippie-charcoal-light rounded-lg overflow-hidden
+                    transform transition-transform hover:scale-105 hover:z-10
+                    ${getRotationClass(index)}
+                  `}
+                >
+                  <img
+                    src={photo.public_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </PageLayout>
@@ -69,7 +118,3 @@ const PhotoGallery = () => {
 };
 
 export default PhotoGallery;
-
-
-
-
