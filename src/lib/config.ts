@@ -8,3 +8,6 @@ export const SQUARE_SCRIPT_SRC = SQUARE_APPLICATION_ID.startsWith('sandbox-')
   ? 'https://sandbox.web.squarecdn.com/v1/square.js'
   : 'https://web.squarecdn.com/v1/square.js'
 
+
+
+

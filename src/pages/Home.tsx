@@ -38,15 +38,22 @@ const Home = () => {
             <Link to="/guest-list" className="hippie-btn-pill text-center">
               Guest List
             </Link>
-            <Link to="/venue-hire" className="hippie-btn-pill text-center">
-              Venue Hire
-            </Link>
-            <Link to="/25-priority" className="hippie-btn-pill text-center">
-              25+ Priority
-            </Link>
-            <Link to="/karaoke" className="hippie-btn-pill text-center">
-              Karaoke
-            </Link>
+            <a 
+              href="https://manorleederville.com/services" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hippie-btn-pill text-center"
+            >
+              Venue Hire at Manor
+            </a>
+            <a 
+              href="https://manorleederville.com/karaoke" 
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hippie-btn-pill text-center"
+            >
+              Karaoke at Manor
+            </a>
           </nav>
         </section>
 

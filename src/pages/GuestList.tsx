@@ -89,6 +89,22 @@ const GuestList = () => {
               Follow us for weekly updates, event announcements, and exclusive promotions
             </p>
           </div>
+
+          {/* 25+ Priority at Manor Section */}
+          <div className="pt-12 space-y-4">
+            <p className="font-body text-hippie-white/80 text-lg">
+              Did you know there's a 25+ list at Manor?
+            </p>
+            <div className="w-full max-w-xs mx-auto border-t border-hippie-white/30"></div>
+            <a
+              href="https://manorleederville.com/priority-entry"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block hippie-btn-primary text-lg px-8 py-3"
+            >
+              25+ Priority at Manor
+            </a>
+          </div>
         </div>
 
         {/* Starburst Graphic */}

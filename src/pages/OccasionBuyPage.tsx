@@ -1,33 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import GuestListEditor from '@/components/GuestListEditor'
-import { fetchTicketGroup, createPaidTicketBooking, type TicketGroup, type PaidTicketBookingResult } from '@/services/ticketBooking'
-import { SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_SCRIPT_SRC } from '@/lib/config'
+import { Check, X, Loader2, AlertCircle, Calendar, Info } from 'lucide-react'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip'
+import GuestListEditor from '../components/GuestListEditor'
+import { fetchOccasionByShareToken, type OccasionDetails } from '../services/occasion'
+import { createPaidTicketBooking, type PaidTicketBookingResult } from '../services/ticketBooking'
+import { SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_SCRIPT_SRC } from '../lib/config'
 
-const TICKET_PRICE_CENTS = 1000 // $10 per ticket
-
-export default function GroupTicketPage() {
+export default function OccasionBuyPage() {
   const { token } = useParams<{ token: string }>()
 
-  // Group data
+  // Occasion data
   const [loading, setLoading] = useState(true)
-  const [group, setGroup] = useState<TicketGroup | null>(null)
+  const [occasion, setOccasion] = useState<OccasionDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   // Form state
@@ -57,19 +46,21 @@ export default function GroupTicketPage() {
 
   const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
-  const totalPriceCents = useMemo(() => ticketQuantity * TICKET_PRICE_CENTS, [ticketQuantity])
+  const ticketPriceCents = occasion?.ticket_price_cents || 1000
+  const totalPriceCents = useMemo(() => ticketQuantity * ticketPriceCents, [ticketQuantity, ticketPriceCents])
   const totalPriceDisplay = useMemo(() => (totalPriceCents / 100).toLocaleString('en-AU', { style: 'currency', currency: 'AUD' }), [totalPriceCents])
+  const ticketPriceDisplay = useMemo(() => (ticketPriceCents / 100).toLocaleString('en-AU', { style: 'currency', currency: 'AUD' }), [ticketPriceCents])
 
   const formattedDate = useMemo(() => {
-    if (!group?.bookingDate) return ''
+    if (!occasion?.booking_date) return ''
     try {
-      return format(parseISO(group.bookingDate), 'EEEE, MMMM d, yyyy')
+      return format(parseISO(occasion.booking_date), 'EEEE, MMMM d, yyyy')
     } catch {
-      return group.bookingDate
+      return occasion.booking_date
     }
-  }, [group?.bookingDate])
+  }, [occasion?.booking_date])
 
-  // Fetch group details on mount
+  // Fetch occasion details on mount
   useEffect(() => {
     if (!token) {
       setError('Invalid link')
@@ -77,27 +68,29 @@ export default function GroupTicketPage() {
       return
     }
 
-    const loadGroup = async () => {
+    const loadOccasion = async () => {
       try {
-        const data = await fetchTicketGroup(token)
+        const data = await fetchOccasionByShareToken(token)
         if (!data) {
           setError('This link is invalid or has expired')
+        } else if (data.remaining_capacity !== undefined && data.remaining_capacity <= 0) {
+          setError('This occasion is at full capacity')
         } else {
-          setGroup(data)
+          setOccasion(data)
         }
-      } catch {
-        setError('Failed to load group details')
+      } catch (err) {
+        setError('Failed to load occasion details')
       } finally {
         setLoading(false)
       }
     }
 
-    loadGroup()
+    loadOccasion()
   }, [token])
 
   // Load Square SDK
   useEffect(() => {
-    if (squareLoaded || !group) return
+    if (squareLoaded || !occasion) return
     const existing = document.querySelector(`script[src="${SQUARE_SCRIPT_SRC}"]`) as HTMLScriptElement | null
     if (existing) { setSquareLoaded(true); return }
     const script = document.createElement('script')
@@ -106,11 +99,11 @@ export default function GroupTicketPage() {
     script.onload = () => setSquareLoaded(true)
     script.onerror = () => setFormError('Failed to load payment SDK')
     document.body.appendChild(script)
-  }, [group, squareLoaded])
+  }, [occasion, squareLoaded])
 
   // Initialize payments instance when SDK is loaded
   useEffect(() => {
-    if (!squareLoaded || squarePayments || !group) return
+    if (!squareLoaded || squarePayments || !occasion) return
     const squareObj = (window as unknown as { Square?: { payments: (appId: string, locationId: string) => { card: () => Promise<{ attach: (sel: string) => Promise<void>; tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> }> } } }).Square
     if (!squareObj) return
     try {
@@ -120,16 +113,16 @@ export default function GroupTicketPage() {
       const msg = err instanceof Error ? err.message : String(err)
       setFormError(msg || 'Failed to initialize payment SDK')
     }
-  }, [squareLoaded, squarePayments, group])
+  }, [squareLoaded, squarePayments, occasion])
 
   // Create and mount the card when payments is ready
   useEffect(() => {
     let canceled = false
     const mount = async () => {
-      if (!squarePayments || squareCard || cardMounted || !group) return
+      if (!squarePayments || squareCard || cardMounted || !occasion) return
       try {
         const card = await squarePayments.card()
-        await card.attach('#hippie-group-ticket-card-container')
+        await card.attach('#occasion-card-container')
         if (!canceled) {
           setSquareCard(card)
           setCardMounted(true)
@@ -141,7 +134,7 @@ export default function GroupTicketPage() {
     }
     mount()
     return () => { canceled = true }
-  }, [squarePayments, squareCard, cardMounted, group])
+  }, [squarePayments, squareCard, cardMounted, occasion])
 
   const isAgeValid = () => {
     if (!dateOfBirth) return false
@@ -150,9 +143,9 @@ export default function GroupTicketPage() {
     const monthDiff = today.getMonth() - dateOfBirth.getMonth()
     
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      return age - 1 >= 25
+      return age - 1 >= 18
     }
-    return age >= 25
+    return age >= 18
   }
 
   const calculateAge = () => {
@@ -188,14 +181,20 @@ export default function GroupTicketPage() {
   }
 
   const submit = async () => {
-    if (!token || !group) return
+    if (!token || !occasion) return
     
     setFormError(null)
     if (!email && !phone) { setFormError('Provide an email or phone'); return }
     if (!name.trim()) { setFormError('Please provide your name'); return }
     if (!dateOfBirth) { setFormError('Please provide your date of birth'); return }
-    if (!isAgeValid()) { setFormError('This ticket type is only for guests who are 25 or older'); return }
+    if (!isAgeValid()) { setFormError('You must be 18 or older to purchase tickets'); return }
     if (!squareCard) { setFormError('Payment form not ready'); return }
+    
+    // Check capacity
+    if (occasion.remaining_capacity !== undefined && ticketQuantity > occasion.remaining_capacity) {
+      setFormError(`Only ${occasion.remaining_capacity} tickets remaining`);
+      return;
+    }
     
     setSubmitting(true)
     try {
@@ -205,20 +204,21 @@ export default function GroupTicketPage() {
         throw new Error(result?.errors?.[0]?.message || 'Failed to process card')
       }
 
+      // Create booking with parent_booking_id set to the occasion ID
       const res = await createPaidTicketBooking({
         customerName: name,
         customerEmail: email || undefined,
         customerPhone: phone || undefined,
-        venue: group.venue,
-        bookingDate: group.bookingDate,
+        venue: occasion.venue,
+        bookingDate: occasion.booking_date,
         ticketQuantity,
         paymentToken: result.token,
-        groupToken: token
+        ticketType: 'occasion',
+        parentBookingId: occasion.id, // Link to the occasion
       })
       setSuccessBooking(res)
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Failed to process payment'
-      setFormError(msg)
+    } catch (e: any) {
+      setFormError(e.message || 'Failed to process payment')
     } finally {
       setSubmitting(false)
     }
@@ -227,30 +227,26 @@ export default function GroupTicketPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-hippie-charcoal text-hippie-white">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#271308', color: '#FFFFFF' }}>
         <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-hippie-gold"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
         </div>
       </div>
     )
   }
 
   // Error state
-  if (error || !group) {
+  if (error || !occasion) {
     return (
-      <div className="min-h-screen flex flex-col bg-hippie-charcoal text-hippie-white">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#271308', color: '#FFFFFF' }}>
         <div className="flex-1 flex items-center justify-center px-4">
           <div className="text-center space-y-4 max-w-md">
-            <svg className="h-12 w-12 text-hippie-coral mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
+            <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
             <h1 className="text-xl font-medium">{error || 'Something went wrong'}</h1>
-            <p className="text-hippie-white/60">This link may be invalid or expired. Please ask the organiser for a new link.</p>
-            <Link to="/25-priority">
-              <Button className="mt-4 hippie-btn-primary">
-                Book your own tickets
+            <p className="text-gray-400">This link may be invalid or expired. Please ask the organiser for a new link.</p>
+            <Link to="/">
+              <Button variant="outline" className="mt-4">
+                Back to Home
               </Button>
             </Link>
           </div>
@@ -263,25 +259,24 @@ export default function GroupTicketPage() {
   if (successBooking) {
     return (
       <TooltipProvider>
-        <div className="min-h-screen flex flex-col bg-hippie-charcoal text-hippie-white">
+        <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#271308', color: '#FFFFFF' }}>
           <div className="flex-1 flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-lg bg-hippie-charcoal-light text-hippie-white rounded-xl p-6 space-y-6 border border-hippie-gold/30">
+            <div className="w-full max-w-lg bg-white text-gray-900 rounded-xl p-6 space-y-6">
               {/* Success header */}
               <div className="text-center space-y-2">
                 <div className="flex items-center justify-center gap-2">
-                  <svg className="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                  <svg className="h-6 w-6 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <h3 className="text-xl font-medium">You're in!</h3>
                 </div>
-                <p className="text-sm text-hippie-white/70">
-                  Reference: <span className="font-mono font-medium text-hippie-gold">{successBooking.referenceCode}</span>
+                <p className="text-sm text-gray-600">
+                  Reference: <span className="font-mono font-medium">{successBooking.referenceCode}</span>
                 </p>
               </div>
 
-              <div className="bg-hippie-gold/10 border border-hippie-gold/30 rounded-lg p-4">
-                <p className="text-sm text-hippie-gold text-center">
-                  You're joining <strong>{group.organiserName}'s</strong> group for <strong>{formattedDate}</strong>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm text-amber-800 text-center">
+                  You're attending <strong>{occasion.occasion_name}</strong> on <strong>{formattedDate}</strong>
+                  {occasion.customer_name && <> hosted by <strong>{occasion.customer_name}</strong></>}
                 </p>
               </div>
 
@@ -295,13 +290,13 @@ export default function GroupTicketPage() {
                 />
               )}
 
-              <p className="text-sm text-hippie-white/50 text-center">
+              <p className="text-sm text-gray-500 text-center">
                 Make sure all guests bring valid ID. Full details have been sent to your email.
               </p>
 
               <div className="flex justify-center">
                 <Link to="/">
-                  <Button className="hippie-btn-primary">Done</Button>
+                  <Button>Done</Button>
                 </Link>
               </div>
             </div>
@@ -314,58 +309,55 @@ export default function GroupTicketPage() {
   // Form state
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-hippie-charcoal text-hippie-white">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#271308', color: '#FFFFFF' }}>
         <div className="flex-1 flex items-center justify-center px-4 py-8">
-          <div className="w-full max-w-lg bg-hippie-charcoal-light text-hippie-white rounded-xl p-6 space-y-6 border border-hippie-gold/30">
+          <div className="w-full max-w-lg bg-white text-gray-900 rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-display uppercase tracking-wide text-hippie-gold">25+ Priority Entry</h1>
-              <p className="text-hippie-white/70">
-                You've been invited by <strong className="text-hippie-white">{group.organiserName}</strong>
-              </p>
+              <h1 className="text-2xl font-medium" style={{ color: '#CD3E28' }}>{occasion.occasion_name}</h1>
+              {occasion.customer_name && (
+                <p className="text-gray-600">
+                  Hosted by <strong>{occasion.customer_name}</strong>
+                </p>
+              )}
             </div>
 
             {/* Date display - locked */}
-            <div className="bg-hippie-charcoal border border-hippie-white/20 rounded-lg p-4 flex items-center gap-3">
-              <svg className="h-5 w-5 text-hippie-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
+            <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 flex items-center gap-3">
+              <Calendar className="h-5 w-5 text-gray-500" />
               <div>
-                <p className="text-sm text-hippie-white/60">Date</p>
-                <p className="font-medium text-hippie-white">{formattedDate}</p>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="font-medium">{formattedDate}</p>
               </div>
             </div>
 
+            {/* Capacity warning */}
+            {occasion.remaining_capacity !== undefined && occasion.remaining_capacity <= 10 && occasion.remaining_capacity > 0 && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <p className="text-sm text-yellow-800 text-center">
+                  Only <strong>{occasion.remaining_capacity}</strong> {occasion.remaining_capacity === 1 ? 'spot' : 'spots'} remaining!
+                </p>
+              </div>
+            )}
+
             {formError && (
-              <div className="text-sm text-hippie-coral bg-hippie-coral/10 border border-hippie-coral/30 rounded-md p-3">{formError}</div>
+              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-3">{formError}</div>
             )}
 
             {/* Form fields */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-hippie-white">Your Full Name</label>
-                <Input 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
-                  placeholder="Jane Doe"
-                  className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
-                />
+                <label className="text-sm font-medium">Your Full Name</label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Jane Doe" />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-hippie-white">Date of Birth</label>
+                  <label className="text-sm font-medium">Date of Birth</label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button type="button" className="inline-flex items-center">
-                        <svg className="h-4 w-4 text-hippie-white/40 cursor-help hover:text-hippie-white/60 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="12" cy="12" r="10"/>
-                          <line x1="12" y1="16" x2="12" y2="12"/>
-                          <line x1="12" y1="8" x2="12.01" y2="8"/>
-                        </svg>
+                        <Info className="h-4 w-4 text-gray-400 cursor-help hover:text-gray-600 transition-colors" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent side="top" align="start" sideOffset={8} className="z-[100] max-w-xs">
@@ -379,19 +371,15 @@ export default function GroupTicketPage() {
                     value={dateOfBirthString} 
                     onChange={(e) => handleDateOfBirthChange(e.target.value)}
                     max={format(new Date(), 'yyyy-MM-dd')}
-                    className="flex-1 bg-hippie-charcoal border-hippie-white/20 text-hippie-white"
+                    className="flex-1"
                   />
                   {calculateAge() !== null && (
-                    <div className="px-3 py-2 bg-hippie-charcoal border border-hippie-white/20 rounded-md text-sm text-hippie-white/70 flex items-center gap-2">
+                    <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 flex items-center gap-2">
                       <span>{calculateAge()} y.o.</span>
                       {isAgeValid() ? (
-                        <svg className="h-4 w-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                        </svg>
+                        <Check className="h-4 w-4 text-green-600" />
                       ) : (
-                        <svg className="h-4 w-4 text-hippie-coral" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X className="h-4 w-4 text-red-600" />
                       )}
                     </div>
                   )}
@@ -399,82 +387,75 @@ export default function GroupTicketPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-hippie-white">Email</label>
-                <Input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  placeholder="jane@example.com"
-                  className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
-                />
+                <label className="text-sm font-medium">Email</label>
+                <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@example.com" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-hippie-white">Phone</label>
-                <Input 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
-                  placeholder="+61 ..."
-                  className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
-                />
+                <label className="text-sm font-medium">Phone</label>
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+61 ..." />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-hippie-white">Number of Tickets</label>
+                <label className="text-sm font-medium">Number of Tickets</label>
                 <Select value={String(ticketQuantity)} onValueChange={(v) => setTicketQuantity(Number(v))}>
-                  <SelectTrigger className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select quantity" />
                   </SelectTrigger>
-                  <SelectContent className="bg-hippie-charcoal border-hippie-white/20">
-                    {quantityOptions.map((quantity) => (
-                      <SelectItem key={quantity} value={String(quantity)} className="text-hippie-white hover:bg-hippie-gold/20">
-                        {quantity} {quantity === 1 ? 'ticket' : 'tickets'}
-                      </SelectItem>
-                    ))}
+                  <SelectContent>
+                    {quantityOptions.map((quantity) => {
+                      const isAvailable = !occasion.remaining_capacity || quantity <= occasion.remaining_capacity
+                      return (
+                        <SelectItem key={quantity} value={String(quantity)} disabled={!isAvailable}>
+                          {quantity} {quantity === 1 ? 'ticket' : 'tickets'}
+                          {!isAvailable && ' (unavailable)'}
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             {!isAgeValid() && dateOfBirth && (
-              <div className="bg-hippie-coral/10 border border-hippie-coral/30 rounded-md p-4">
-                <p className="text-sm text-hippie-coral">
-                  This ticket type is reserved only for guests who are 25 years of age or older.
+              <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                <p className="text-sm text-red-800">
+                  You must be 18 years of age or older to purchase tickets.
                 </p>
               </div>
             )}
 
             {isAgeValid() && ticketQuantity > 1 && (
-              <div className="bg-hippie-gold/10 border border-hippie-gold/30 rounded-md p-4">
-                <p className="text-sm text-hippie-gold">
-                  All guests will need to be 25 years of age or older to use these tickets. Please make sure all of your guests have valid ID when you arrive.
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                <p className="text-sm text-yellow-800">
+                  All guests will need to be 18 years of age or older to use these tickets. Please make sure all of your guests have valid ID when you arrive.
                 </p>
               </div>
             )}
 
             {/* Order Summary */}
-            <div className="bg-hippie-charcoal border border-hippie-white/20 rounded-md p-4 space-y-3">
-              <h4 className="text-sm font-medium text-hippie-gold">Order Summary</h4>
-              <div className="flex justify-between text-sm text-hippie-white">
-                <span>{ticketQuantity} × 25+ Priority Entry ($10.00 each)</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-md p-4 space-y-3">
+              <h4 className="text-sm font-medium">Order Summary</h4>
+              <div className="flex justify-between text-sm">
+                <span>{ticketQuantity} × Ticket ({ticketPriceDisplay} each)</span>
                 <span className="font-medium">{totalPriceDisplay}</span>
               </div>
-              <div className="border-t border-hippie-white/10 pt-2 flex justify-between">
-                <span className="font-medium text-hippie-white">Total</span>
-                <span className="font-medium text-lg text-hippie-gold">{totalPriceDisplay}</span>
+              <div className="border-t pt-2 flex justify-between">
+                <span className="font-medium">Total</span>
+                <span className="font-medium text-lg">{totalPriceDisplay}</span>
               </div>
             </div>
 
             {/* Payment Card */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-hippie-gold">Payment</label>
-              <div id="hippie-group-ticket-card-container" className="border border-hippie-white/20 rounded-md p-3 bg-white min-h-[50px]" />
+              <label className="text-sm font-medium">Payment</label>
+              <div id="occasion-card-container" className="border border-gray-300 rounded-md p-3 bg-white min-h-[50px]" />
               {!squareCard && squareLoaded && (
-                <p className="text-xs text-hippie-white/50">Loading payment form...</p>
+                <p className="text-xs text-gray-500">Loading payment form...</p>
               )}
             </div>
 
-            <Button onClick={submit} disabled={submitting || !isFormValid()} className="w-full hippie-btn-primary">
+            <Button onClick={submit} disabled={submitting || !isFormValid()} className="w-full">
               {submitting ? 'Processing...' : `Pay ${totalPriceDisplay}`}
             </Button>
           </div>
@@ -483,7 +464,4 @@ export default function GroupTicketPage() {
     </TooltipProvider>
   )
 }
-
-
-
 
