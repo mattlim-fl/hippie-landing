@@ -23,7 +23,7 @@ const PageLayout = ({
   background = "dark",
   className = "",
   hideHeader = false,
-  hideFooter = false,
+  hideFooter = true,
 }: PageLayoutProps) => {
   return (
     <div
