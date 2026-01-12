@@ -29,58 +29,64 @@ const Photos = () => {
 
   return (
     <PageLayout background="dark">
-      <div className="flex-1 flex flex-col items-center px-4 py-8">
-        {/* Page Title */}
-        <PageTitle className="mb-6">Photos</PageTitle>
+      <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col items-center px-4 py-8">
+          {/* Page Title */}
+          <PageTitle className="mb-6">Photos</PageTitle>
 
-        {/* Subtitle */}
-        <p className="font-body text-hippie-white/80 text-center mb-8">
-          Have you been snapped at Hippie Club?
-        </p>
+          {/* Subtitle */}
+          <p className="font-body text-hippie-white/80 text-center mb-8">
+            Have you been snapped at Hippie Club?
+          </p>
 
-        {/* Date List */}
-        <div className="w-full max-w-md space-y-3 mb-12">
-          {loading ? (
-            // Loading skeleton
-            <>
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-12 bg-hippie-charcoal-light/50 rounded-full animate-pulse"
-                />
-              ))}
-            </>
-          ) : error ? (
-            <p className="text-hippie-coral text-center py-4">{error}</p>
-          ) : albums.length === 0 ? (
-            <p className="text-hippie-white/60 text-center py-4">
-              No photo albums available yet. Check back soon!
-            </p>
-          ) : (
-            albums.map((album, index) => (
-              <Link
-                key={album.id}
-                to={`/photos/${album.event_date}`}
-                className={
-                  index === 0
-                    ? "hippie-btn-date-active w-full block text-center"
-                    : "hippie-btn-date w-full block text-center"
-                }
-              >
-                {formatEventDate(album.event_date)}
-              </Link>
-            ))
-          )}
+          {/* Date List */}
+          <div className="w-full max-w-md space-y-3 mb-12">
+            {loading ? (
+              // Loading skeleton
+              <>
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-12 bg-hippie-charcoal-light/50 rounded-full animate-pulse"
+                  />
+                ))}
+              </>
+            ) : error ? (
+              <p className="text-hippie-coral text-center py-4">{error}</p>
+            ) : albums.length === 0 ? (
+              <p className="text-hippie-white/60 text-center py-4">
+                No photo albums available yet. Check back soon!
+              </p>
+            ) : (
+              albums.map((album, index) => (
+                <Link
+                  key={album.id}
+                  to={`/photos/${album.event_date}`}
+                  className={
+                    index === 0
+                      ? "hippie-btn-date-active w-full block text-center"
+                      : "hippie-btn-date w-full block text-center"
+                  }
+                >
+                  {formatEventDate(album.event_date)}
+                </Link>
+              ))
+            )}
+          </div>
         </div>
 
-        {/* Venue Photo with Spinning Text */}
-        <div className="relative w-full max-w-2xl aspect-video mb-8">
-          {/* Placeholder for venue photo */}
-          <div className="w-full h-full bg-hippie-charcoal-light rounded-lg flex items-center justify-center">
-            <span className="text-hippie-white/50">Venue Photo</span>
+        {/* Venue Photo with Spinning Text - Full Width */}
+        <div className="relative w-full aspect-video mb-8">
+          {/* Venue photo */}
+          <div className="w-full h-full overflow-hidden">
+            <img 
+              src="/venue-photo.png" 
+              alt="Hippie Club venue photo" 
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          {/* Spinning text overlay placeholder */}
+          {/* Spinning text overlay */}
           <div className="absolute top-4 right-4 w-32 h-32">
             <div className="w-full h-full rounded-full border-2 border-hippie-gold flex items-center justify-center animate-spin-slow">
               <span className="text-hippie-gold text-xs text-center px-2 animate-none">

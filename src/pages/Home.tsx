@@ -18,7 +18,7 @@ const Home = () => {
         
         <div className="relative z-10 flex-1 flex flex-col">
         {/* Hero Section */}
-        <section className="flex-1 flex flex-col items-center justify-start pt-8 px-4 relative z-10">
+        <section className="flex flex-col items-center justify-start pt-8 px-4 relative z-10">
           {/* Logo */}
           <h1 className="font-display text-4xl md:text-5xl text-hippie-gold tracking-wider uppercase mb-4 drop-shadow-lg">
             Hippie Club
@@ -31,7 +31,7 @@ const Home = () => {
           </p>
 
           {/* Navigation Buttons */}
-          <nav className="flex flex-col gap-3 w-full max-w-xs">
+          <nav className="flex flex-col gap-3 w-full max-w-xs mb-6">
             <Link to="/photos" className="hippie-btn-pill text-center">
               Photos
             </Link>
@@ -58,38 +58,42 @@ const Home = () => {
         </section>
 
         {/* "Have you been snapped?" Section */}
-        <section className="py-12 px-4 relative z-10">
-          <div className="max-w-4xl mx-auto">
-            {/* Photo placeholders */}
-            <div className="flex gap-4 justify-center mb-6">
-              <div className="w-32 h-40 md:w-40 md:h-52 bg-black/40 backdrop-blur-sm border-2 border-hippie-coral rounded-lg transform -rotate-3 flex items-center justify-center shadow-lg">
-                <span className="text-hippie-white text-xs">Photo</span>
+        <section className="pt-4 pb-12 px-4 relative z-10">
+          <div className="max-w-4xl mx-auto relative">
+            {/* Photos arranged horizontally with vertical offset */}
+            <div className="flex flex-row gap-4 justify-center items-start relative">
+              {/* Left photo (home-1.jpg) - positioned higher */}
+              <div className="w-32 h-40 md:w-40 md:h-52 border-2 border-hippie-coral rounded-lg transform -rotate-3 overflow-hidden shadow-lg">
+                <img 
+                  src="/home-1.jpg" 
+                  alt="Hippie Club nightlife photo" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <div className="w-32 h-40 md:w-40 md:h-52 bg-black/40 backdrop-blur-sm border-2 border-hippie-coral rounded-lg transform rotate-2 flex items-center justify-center shadow-lg">
-                <span className="text-hippie-white text-xs">Photo</span>
-              </div>
-            </div>
 
-            {/* Starburst text */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-hippie-white px-6 py-3 rounded-full transform rotate-[-5deg] shadow-lg">
-                <span className="font-display text-hippie-charcoal text-sm md:text-base uppercase tracking-wide">
-                  Have you been snapped?
-                </span>
+              {/* Starburst text - positioned in the middle, overlapping both images */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                <div className="bg-hippie-white px-6 py-3 rounded-full transform rotate-[-5deg] shadow-lg">
+                  <span className="font-display text-hippie-charcoal text-sm md:text-base uppercase tracking-wide text-center block">
+                    Have you been snapped?
+                  </span>
+                </div>
+              </div>
+
+              {/* Right photo (home-2.jpg) - positioned lower */}
+              <div className="w-32 h-40 md:w-40 md:h-52 border-2 border-hippie-coral rounded-lg transform rotate-2 overflow-hidden shadow-lg mt-24 md:mt-32">
+                <img 
+                  src="/home-2.jpg" 
+                  alt="Hippie Club nightlife photo" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Logo and Social Section */}
+        {/* Social Section */}
         <section className="py-8 px-4 flex flex-col items-center relative z-10">
-          {/* Mascot Logo Placeholder */}
-          <div className="w-32 h-40 mb-6">
-            <div className="w-full h-full bg-black/40 backdrop-blur-sm rounded-lg border-2 border-hippie-green-dark flex items-center justify-center shadow-lg">
-              <span className="text-hippie-white text-xs text-center drop-shadow-lg">Hippie Club<br/>Logo</span>
-            </div>
-          </div>
-
           {/* Follow Us */}
           <div className="flex items-center gap-3 mb-6">
             <span className="font-display text-sm text-hippie-white uppercase tracking-wider bg-hippie-green-dark/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
