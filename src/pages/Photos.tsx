@@ -30,7 +30,7 @@ const Photos = () => {
   return (
     <PageLayout background="dark">
       <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col items-center px-4 py-8">
+        <div className="flex flex-col items-center px-4 pt-8 pb-4">
           {/* Page Title */}
           <PageTitle className="mb-6">Photos</PageTitle>
 
@@ -40,7 +40,7 @@ const Photos = () => {
           </p>
 
           {/* Date List */}
-          <div className="w-full max-w-md space-y-3 mb-12">
+          <div className="w-full max-w-md space-y-3 mb-4">
             {loading ? (
               // Loading skeleton
               <>
