@@ -1,7 +1,7 @@
 import Header from "./Header";
 import Footer from "./Footer";
 
-type BackgroundVariant = "dark" | "teal" | "coral" | "collage";
+type BackgroundVariant = "dark" | "teal" | "coral" | "collage" | "greyscale" | "greyscale-dark";
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -16,6 +16,8 @@ const backgroundClasses: Record<BackgroundVariant, string> = {
   teal: "bg-pattern-teal bg-swirl-teal",
   coral: "bg-pattern-coral bg-swirl-coral",
   collage: "bg-pattern-collage",
+  greyscale: "bg-pattern-greyscale",
+  "greyscale-dark": "bg-pattern-greyscale-dark",
 };
 
 const PageLayout = ({
@@ -23,7 +25,7 @@ const PageLayout = ({
   background = "dark",
   className = "",
   hideHeader = false,
-  hideFooter = true,
+  hideFooter = false,
 }: PageLayoutProps) => {
   return (
     <div

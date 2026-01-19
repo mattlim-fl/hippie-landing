@@ -56,7 +56,7 @@ const GuestList = () => {
 
   // Default: show the "Get on the List" marketing page
   return (
-    <PageLayout background="teal">
+    <PageLayout background="greyscale">
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         {/* Page Title */}
         <PageTitle className="mb-8">Guest List</PageTitle>

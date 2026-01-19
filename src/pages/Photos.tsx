@@ -28,7 +28,7 @@ const Photos = () => {
   }, []);
 
   return (
-    <PageLayout background="dark">
+    <PageLayout background="greyscale-dark">
       <div className="flex-1 flex flex-col">
         <div className="flex flex-col items-center px-4 pt-8 pb-4">
           {/* Page Title */}
@@ -75,7 +75,7 @@ const Photos = () => {
           </div>
         </div>
 
-        {/* Venue Photo with Spinning Text - Full Width */}
+        {/* Venue Photo with Spinning Roundel - Full Width */}
         <div className="relative w-full aspect-video mb-8">
           {/* Venue photo */}
           <div className="w-full h-full overflow-hidden">
@@ -86,13 +86,13 @@ const Photos = () => {
             />
           </div>
 
-          {/* Spinning text overlay */}
-          <div className="absolute top-4 right-4 w-32 h-32">
-            <div className="w-full h-full rounded-full border-2 border-hippie-gold flex items-center justify-center animate-spin-slow">
-              <span className="text-hippie-gold text-xs text-center px-2 animate-none">
-                You spin me right round...
-              </span>
-            </div>
+          {/* Spinning roundel overlay */}
+          <div className="absolute top-4 right-4 w-60 h-60 md:w-80 md:h-80 aspect-square">
+            <img 
+              src="/Graphic Assets/Spin Me Right Round Roundel/The hippie Club - Spin Me Right Round Roundel A.png" 
+              alt="Spin me right round roundel" 
+              className="w-full h-full object-contain animate-spin-slow"
+            />
           </div>
         </div>
       </div>

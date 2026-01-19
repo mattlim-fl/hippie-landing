@@ -254,6 +254,28 @@
     @apply bg-hippie-gold;
     /* This will be overlaid with actual collage images */
   }
+
+  /* Greyscale background - Guest List page */
+  .bg-pattern-greyscale {
+    @apply bg-hippie-charcoal;
+    background-image: url('/Graphic Assets/Background/The Hippie Club - Background (GREYSCALE) A.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  /* Darker greyscale background - Photos page */
+  .bg-pattern-greyscale-dark {
+    @apply bg-hippie-charcoal;
+    background-image: 
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      url('/Graphic Assets/Background/The Hippie Club - Background (GREYSCALE) A.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
 }
 
 /* ============================================
