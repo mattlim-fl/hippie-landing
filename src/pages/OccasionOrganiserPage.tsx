@@ -147,7 +147,7 @@ export default function OccasionOrganiserPage() {
         <div className="w-full max-w-2xl space-y-6">
           {/* Header */}
           <div className="bg-white text-gray-900 rounded-xl p-6 space-y-4">
-            <h1 className="text-3xl font-bold" style={{ color: '#CD3E28' }}>
+            <h1 className="text-3xl font-semibold" style={{ color: '#CD3E28' }}>
               {occasion.occasion_name}
             </h1>
             

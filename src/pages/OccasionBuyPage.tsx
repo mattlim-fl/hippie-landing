@@ -314,7 +314,7 @@ export default function OccasionBuyPage() {
           <div className="w-full max-w-lg bg-white text-gray-900 rounded-xl p-6 space-y-6">
             {/* Header */}
             <div className="text-center space-y-2">
-              <h1 className="text-2xl font-medium" style={{ color: '#CD3E28' }}>{occasion.occasion_name}</h1>
+              <h1 className="text-2xl font-semibold" style={{ color: '#CD3E28' }}>{occasion.occasion_name}</h1>
               {occasion.customer_name && (
                 <p className="text-gray-600">
                   Hosted by <strong>{occasion.customer_name}</strong>
