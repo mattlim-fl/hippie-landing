@@ -4,21 +4,7 @@ import { format, parseISO } from 'date-fns'
 import { Loader2, AlertCircle, Calendar, Users, Ticket, Share2, Copy, Check } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { getSupabase } from '../lib/supabaseClient'
-
-interface OccasionDetails {
-  id: string
-  occasion_name: string
-  booking_date: string
-  venue: 'manor' | 'hippie'
-  capacity: number
-  ticket_price_cents: number
-  share_token: string
-  organiser_token: string
-  customer_name: string | null
-  total_bookings: number
-  total_guests: number
-  remaining_capacity: number
-}
+import type { OccasionDetails } from '../services/occasion'
 
 export default function OccasionOrganiserPage() {
   const { token } = useParams<{ token: string }>()

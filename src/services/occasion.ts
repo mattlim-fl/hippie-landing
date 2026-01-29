@@ -9,6 +9,8 @@ export interface OccasionDetails {
   ticket_price_cents: number
   share_token: string
   customer_name: string | null // organiser name
+  organiser_token?: string // only available in organiser context
+  total_bookings?: number // only available in organiser context
   total_guests?: number
   remaining_capacity?: number
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { Check, X, Loader2, AlertCircle, Calendar, Info } from 'lucide-react'
@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../com
 import GuestListEditor from '../components/GuestListEditor'
 import { fetchOccasionByShareToken, type OccasionDetails } from '../services/occasion'
 import { createPaidTicketBooking, type PaidTicketBookingResult } from '../services/ticketBooking'
-import { SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_SCRIPT_SRC } from '../lib/config'
+import { useSquarePayment, useDateOfBirth } from '../hooks'
 
 export default function OccasionBuyPage() {
   const { token } = useParams<{ token: string }>()
@@ -20,8 +20,6 @@ export default function OccasionBuyPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Form state
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined)
-  const [dateOfBirthString, setDateOfBirthString] = useState('')
   const [ticketQuantity, setTicketQuantity] = useState<number>(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -30,19 +28,18 @@ export default function OccasionBuyPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [successBooking, setSuccessBooking] = useState<PaidTicketBookingResult | null>(null)
 
-  // Square payment state
-  const [squareLoaded, setSquareLoaded] = useState(false)
-  const [squarePayments, setSquarePayments] = useState<{ 
-    card: () => Promise<{ 
-      attach: (sel: string) => Promise<void>
-      tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> 
-    }> 
-  } | null>(null)
-  const [squareCard, setSquareCard] = useState<{ 
-    attach: (sel: string) => Promise<void>
-    tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> 
-  } | null>(null)
-  const [cardMounted, setCardMounted] = useState(false)
+  // Use custom hooks for shared logic
+  const { dateOfBirth, dateOfBirthString, handleChange: handleDateOfBirthChange, age, isAgeValid } = useDateOfBirth({
+    minimumAge: 18,
+  })
+
+  const handleSquareError = useCallback((msg: string) => setFormError(msg), [])
+
+  const { isReady: isPaymentReady, tokenize } = useSquarePayment({
+    enabled: !!occasion,
+    cardContainerId: '#occasion-card-container',
+    onError: handleSquareError,
+  })
 
   const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
@@ -78,7 +75,7 @@ export default function OccasionBuyPage() {
         } else {
           setOccasion(data)
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load occasion details')
       } finally {
         setLoading(false)
@@ -88,123 +85,34 @@ export default function OccasionBuyPage() {
     loadOccasion()
   }, [token])
 
-  // Load Square SDK
-  useEffect(() => {
-    if (squareLoaded || !occasion) return
-    const existing = document.querySelector(`script[src="${SQUARE_SCRIPT_SRC}"]`) as HTMLScriptElement | null
-    if (existing) { setSquareLoaded(true); return }
-    const script = document.createElement('script')
-    script.src = SQUARE_SCRIPT_SRC
-    script.async = true
-    script.onload = () => setSquareLoaded(true)
-    script.onerror = () => setFormError('Failed to load payment SDK')
-    document.body.appendChild(script)
-  }, [occasion, squareLoaded])
-
-  // Initialize payments instance when SDK is loaded
-  useEffect(() => {
-    if (!squareLoaded || squarePayments || !occasion) return
-    const squareObj = (window as unknown as { Square?: { payments: (appId: string, locationId: string) => { card: () => Promise<{ attach: (sel: string) => Promise<void>; tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> }> } } }).Square
-    if (!squareObj) return
-    try {
-      const p = squareObj.payments(SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID)
-      setSquarePayments(p)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      setFormError(msg || 'Failed to initialize payment SDK')
-    }
-  }, [squareLoaded, squarePayments, occasion])
-
-  // Create and mount the card when payments is ready
-  useEffect(() => {
-    let canceled = false
-    const mount = async () => {
-      if (!squarePayments || squareCard || cardMounted || !occasion) return
-      try {
-        const card = await squarePayments.card()
-        await card.attach('#occasion-card-container')
-        if (!canceled) {
-          setSquareCard(card)
-          setCardMounted(true)
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setFormError(msg || 'Failed to mount payment form')
-      }
-    }
-    mount()
-    return () => { canceled = true }
-  }, [squarePayments, squareCard, cardMounted, occasion])
-
-  const isAgeValid = () => {
-    if (!dateOfBirth) return false
-    const today = new Date()
-    const age = today.getFullYear() - dateOfBirth.getFullYear()
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      return age - 1 >= 18
-    }
-    return age >= 18
-  }
-
-  const calculateAge = () => {
-    if (!dateOfBirth) return null
-    const today = new Date()
-    const age = today.getFullYear() - dateOfBirth.getFullYear()
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      return age - 1
-    }
-    return age
-  }
-
-  const handleDateOfBirthChange = (value: string) => {
-    setDateOfBirthString(value)
-    if (value && value.length === 10) {
-      const date = new Date(value)
-      if (!isNaN(date.getTime())) {
-        setDateOfBirth(date)
-      }
-    } else {
-      setDateOfBirth(undefined)
-    }
-  }
-
   const isFormValid = () => {
-    return (email || phone) && 
-           name.trim() && 
+    return (email || phone) &&
+           name.trim() &&
            ticketQuantity > 0 &&
-           isAgeValid() &&
-           squareCard !== null
+           isAgeValid &&
+           isPaymentReady
   }
 
   const submit = async () => {
     if (!token || !occasion) return
-    
+
     setFormError(null)
     if (!email && !phone) { setFormError('Provide an email or phone'); return }
     if (!name.trim()) { setFormError('Please provide your name'); return }
     if (!dateOfBirth) { setFormError('Please provide your date of birth'); return }
-    if (!isAgeValid()) { setFormError('You must be 18 or older to purchase tickets'); return }
-    if (!squareCard) { setFormError('Payment form not ready'); return }
-    
+    if (!isAgeValid) { setFormError('You must be 18 or older to purchase tickets'); return }
+    if (!isPaymentReady) { setFormError('Payment form not ready'); return }
+
     // Check capacity
     if (occasion.remaining_capacity !== undefined && ticketQuantity > occasion.remaining_capacity) {
-      setFormError(`Only ${occasion.remaining_capacity} tickets remaining`);
-      return;
+      setFormError(`Only ${occasion.remaining_capacity} tickets remaining`)
+      return
     }
-    
+
     setSubmitting(true)
     try {
-      // Tokenize the card
-      const result = await squareCard.tokenize()
-      if (result.status !== 'OK') {
-        throw new Error(result?.errors?.[0]?.message || 'Failed to process card')
-      }
+      const paymentToken = await tokenize()
 
-      // Create booking with parent_booking_id set to the occasion ID
       const res = await createPaidTicketBooking({
         customerName: name,
         customerEmail: email || undefined,
@@ -212,13 +120,14 @@ export default function OccasionBuyPage() {
         venue: occasion.venue,
         bookingDate: occasion.booking_date,
         ticketQuantity,
-        paymentToken: result.token,
+        paymentToken,
         ticketType: 'occasion',
-        parentBookingId: occasion.id, // Link to the occasion
+        parentBookingId: occasion.id,
       })
       setSuccessBooking(res)
-    } catch (e: any) {
-      setFormError(e.message || 'Failed to process payment')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Failed to process payment'
+      setFormError(msg)
     } finally {
       setSubmitting(false)
     }
@@ -366,17 +275,17 @@ export default function OccasionBuyPage() {
                   </Tooltip>
                 </div>
                 <div className="flex gap-2">
-                  <Input 
-                    type="date" 
-                    value={dateOfBirthString} 
+                  <Input
+                    type="date"
+                    value={dateOfBirthString}
                     onChange={(e) => handleDateOfBirthChange(e.target.value)}
                     max={format(new Date(), 'yyyy-MM-dd')}
                     className="flex-1"
                   />
-                  {calculateAge() !== null && (
+                  {age !== null && (
                     <div className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm text-gray-600 flex items-center gap-2">
-                      <span>{calculateAge()} y.o.</span>
-                      {isAgeValid() ? (
+                      <span>{age} y.o.</span>
+                      {isAgeValid ? (
                         <Check className="h-4 w-4 text-green-600" />
                       ) : (
                         <X className="h-4 w-4 text-red-600" />
@@ -417,7 +326,7 @@ export default function OccasionBuyPage() {
               </div>
             </div>
 
-            {!isAgeValid() && dateOfBirth && (
+            {!isAgeValid && dateOfBirth && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4">
                 <p className="text-sm text-red-800">
                   You must be 18 years of age or older to purchase tickets.
@@ -425,7 +334,7 @@ export default function OccasionBuyPage() {
               </div>
             )}
 
-            {isAgeValid() && ticketQuantity > 1 && (
+            {isAgeValid && ticketQuantity > 1 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
                 <p className="text-sm text-yellow-800">
                   All guests will need to be 18 years of age or older to use these tickets. Please make sure all of your guests have valid ID when you arrive.
@@ -450,7 +359,7 @@ export default function OccasionBuyPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Payment</label>
               <div id="occasion-card-container" className="border border-gray-300 rounded-md p-3 bg-white min-h-[50px]" />
-              {!squareCard && squareLoaded && (
+              {!isPaymentReady && occasion && (
                 <p className="text-xs text-gray-500">Loading payment form...</p>
               )}
             </div>
@@ -464,4 +373,3 @@ export default function OccasionBuyPage() {
     </TooltipProvider>
   )
 }
-

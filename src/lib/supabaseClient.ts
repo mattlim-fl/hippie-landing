@@ -1,11 +1,16 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
-// Hardcoded Supabase configuration (same as Manor - shared backend)
 const getConfig = () => {
-  return {
-    url: 'https://plksvatjdylpuhjitbfc.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBsa3N2YXRqZHlscHVoaml0YmZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NjQ5MzMsImV4cCI6MjA2NjM0MDkzM30.IdM8u1iq88C0ruwp7IkMB7PxwnfwmRyl6uLnBmZq5ys'
+  const url = import.meta.env.VITE_SUPABASE_URL
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  if (!url || !anonKey) {
+    throw new Error(
+      'Missing Supabase configuration. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env.local'
+    )
   }
+
+  return { url, anonKey }
 }
 
 let cached: SupabaseClient | null = null

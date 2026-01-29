@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/tooltip'
 import GuestListEditor from '@/components/GuestListEditor'
 import { fetchTicketGroup, createPaidTicketBooking, type TicketGroup, type PaidTicketBookingResult } from '@/services/ticketBooking'
-import { SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_SCRIPT_SRC } from '@/lib/config'
+import { useSquarePayment, useDateOfBirth } from '@/hooks'
 
 const TICKET_PRICE_CENTS = 1000 // $10 per ticket
 
@@ -31,8 +31,6 @@ export default function GroupTicketPage() {
   const [error, setError] = useState<string | null>(null)
 
   // Form state
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined)
-  const [dateOfBirthString, setDateOfBirthString] = useState('')
   const [ticketQuantity, setTicketQuantity] = useState<number>(1)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -41,19 +39,18 @@ export default function GroupTicketPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [successBooking, setSuccessBooking] = useState<PaidTicketBookingResult | null>(null)
 
-  // Square payment state
-  const [squareLoaded, setSquareLoaded] = useState(false)
-  const [squarePayments, setSquarePayments] = useState<{ 
-    card: () => Promise<{ 
-      attach: (sel: string) => Promise<void>
-      tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> 
-    }> 
-  } | null>(null)
-  const [squareCard, setSquareCard] = useState<{ 
-    attach: (sel: string) => Promise<void>
-    tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> 
-  } | null>(null)
-  const [cardMounted, setCardMounted] = useState(false)
+  // Use custom hooks for shared logic
+  const { dateOfBirth, dateOfBirthString, handleChange: handleDateOfBirthChange, age, isAgeValid } = useDateOfBirth({
+    minimumAge: 25, // 25+ for group tickets
+  })
+
+  const handleSquareError = useCallback((msg: string) => setFormError(msg), [])
+
+  const { isReady: isPaymentReady, tokenize } = useSquarePayment({
+    enabled: !!group,
+    cardContainerId: '#hippie-group-ticket-card-container',
+    onError: handleSquareError,
+  })
 
   const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
 
@@ -95,115 +92,27 @@ export default function GroupTicketPage() {
     loadGroup()
   }, [token])
 
-  // Load Square SDK
-  useEffect(() => {
-    if (squareLoaded || !group) return
-    const existing = document.querySelector(`script[src="${SQUARE_SCRIPT_SRC}"]`) as HTMLScriptElement | null
-    if (existing) { setSquareLoaded(true); return }
-    const script = document.createElement('script')
-    script.src = SQUARE_SCRIPT_SRC
-    script.async = true
-    script.onload = () => setSquareLoaded(true)
-    script.onerror = () => setFormError('Failed to load payment SDK')
-    document.body.appendChild(script)
-  }, [group, squareLoaded])
-
-  // Initialize payments instance when SDK is loaded
-  useEffect(() => {
-    if (!squareLoaded || squarePayments || !group) return
-    const squareObj = (window as unknown as { Square?: { payments: (appId: string, locationId: string) => { card: () => Promise<{ attach: (sel: string) => Promise<void>; tokenize: () => Promise<{ status: string; token: string; errors?: Array<{ message?: string }> }> }> } } }).Square
-    if (!squareObj) return
-    try {
-      const p = squareObj.payments(SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID)
-      setSquarePayments(p)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      setFormError(msg || 'Failed to initialize payment SDK')
-    }
-  }, [squareLoaded, squarePayments, group])
-
-  // Create and mount the card when payments is ready
-  useEffect(() => {
-    let canceled = false
-    const mount = async () => {
-      if (!squarePayments || squareCard || cardMounted || !group) return
-      try {
-        const card = await squarePayments.card()
-        await card.attach('#hippie-group-ticket-card-container')
-        if (!canceled) {
-          setSquareCard(card)
-          setCardMounted(true)
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err)
-        setFormError(msg || 'Failed to mount payment form')
-      }
-    }
-    mount()
-    return () => { canceled = true }
-  }, [squarePayments, squareCard, cardMounted, group])
-
-  const isAgeValid = () => {
-    if (!dateOfBirth) return false
-    const today = new Date()
-    const age = today.getFullYear() - dateOfBirth.getFullYear()
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      return age - 1 >= 25
-    }
-    return age >= 25
-  }
-
-  const calculateAge = () => {
-    if (!dateOfBirth) return null
-    const today = new Date()
-    const age = today.getFullYear() - dateOfBirth.getFullYear()
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
-      return age - 1
-    }
-    return age
-  }
-
-  const handleDateOfBirthChange = (value: string) => {
-    setDateOfBirthString(value)
-    if (value && value.length === 10) {
-      const date = new Date(value)
-      if (!isNaN(date.getTime())) {
-        setDateOfBirth(date)
-      }
-    } else {
-      setDateOfBirth(undefined)
-    }
-  }
-
   const isFormValid = () => {
-    return (email || phone) && 
-           name.trim() && 
+    return (email || phone) &&
+           name.trim() &&
            ticketQuantity > 0 &&
-           isAgeValid() &&
-           squareCard !== null
+           isAgeValid &&
+           isPaymentReady
   }
 
   const submit = async () => {
     if (!token || !group) return
-    
+
     setFormError(null)
     if (!email && !phone) { setFormError('Provide an email or phone'); return }
     if (!name.trim()) { setFormError('Please provide your name'); return }
     if (!dateOfBirth) { setFormError('Please provide your date of birth'); return }
-    if (!isAgeValid()) { setFormError('This ticket type is only for guests who are 25 or older'); return }
-    if (!squareCard) { setFormError('Payment form not ready'); return }
-    
+    if (!isAgeValid) { setFormError('This ticket type is only for guests who are 25 or older'); return }
+    if (!isPaymentReady) { setFormError('Payment form not ready'); return }
+
     setSubmitting(true)
     try {
-      // Tokenize the card
-      const result = await squareCard.tokenize()
-      if (result.status !== 'OK') {
-        throw new Error(result?.errors?.[0]?.message || 'Failed to process card')
-      }
+      const paymentToken = await tokenize()
 
       const res = await createPaidTicketBooking({
         customerName: name,
@@ -212,8 +121,8 @@ export default function GroupTicketPage() {
         venue: group.venue,
         bookingDate: group.bookingDate,
         ticketQuantity,
-        paymentToken: result.token,
-        groupToken: token
+        paymentToken,
+        groupToken: token,
       })
       setSuccessBooking(res)
     } catch (e: unknown) {
@@ -347,9 +256,9 @@ export default function GroupTicketPage() {
             <div className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-hippie-white">Your Full Name</label>
-                <Input 
-                  value={name} 
-                  onChange={(e) => setName(e.target.value)} 
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   placeholder="Jane Doe"
                   className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
                 />
@@ -374,17 +283,17 @@ export default function GroupTicketPage() {
                   </Tooltip>
                 </div>
                 <div className="flex gap-2">
-                  <Input 
-                    type="date" 
-                    value={dateOfBirthString} 
+                  <Input
+                    type="date"
+                    value={dateOfBirthString}
                     onChange={(e) => handleDateOfBirthChange(e.target.value)}
                     max={format(new Date(), 'yyyy-MM-dd')}
                     className="flex-1 bg-hippie-charcoal border-hippie-white/20 text-hippie-white"
                   />
-                  {calculateAge() !== null && (
+                  {age !== null && (
                     <div className="px-3 py-2 bg-hippie-charcoal border border-hippie-white/20 rounded-md text-sm text-hippie-white/70 flex items-center gap-2">
-                      <span>{calculateAge()} y.o.</span>
-                      {isAgeValid() ? (
+                      <span>{age} y.o.</span>
+                      {isAgeValid ? (
                         <svg className="h-4 w-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
@@ -400,10 +309,10 @@ export default function GroupTicketPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-hippie-white">Email</label>
-                <Input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="jane@example.com"
                   className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
                 />
@@ -411,9 +320,9 @@ export default function GroupTicketPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-hippie-white">Phone</label>
-                <Input 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
                   placeholder="+61 ..."
                   className="bg-hippie-charcoal border-hippie-white/20 text-hippie-white placeholder:text-hippie-white/40"
                 />
@@ -436,7 +345,7 @@ export default function GroupTicketPage() {
               </div>
             </div>
 
-            {!isAgeValid() && dateOfBirth && (
+            {!isAgeValid && dateOfBirth && (
               <div className="bg-hippie-coral/10 border border-hippie-coral/30 rounded-md p-4">
                 <p className="text-sm text-hippie-coral">
                   This ticket type is reserved only for guests who are 25 years of age or older.
@@ -444,7 +353,7 @@ export default function GroupTicketPage() {
               </div>
             )}
 
-            {isAgeValid() && ticketQuantity > 1 && (
+            {isAgeValid && ticketQuantity > 1 && (
               <div className="bg-hippie-gold/10 border border-hippie-gold/30 rounded-md p-4">
                 <p className="text-sm text-hippie-gold">
                   All guests will need to be 25 years of age or older to use these tickets. Please make sure all of your guests have valid ID when you arrive.
@@ -469,7 +378,7 @@ export default function GroupTicketPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-hippie-gold">Payment</label>
               <div id="hippie-group-ticket-card-container" className="border border-hippie-white/20 rounded-md p-3 bg-white min-h-[50px]" />
-              {!squareCard && squareLoaded && (
+              {!isPaymentReady && group && (
                 <p className="text-xs text-hippie-white/50">Loading payment form...</p>
               )}
             </div>
@@ -483,7 +392,3 @@ export default function GroupTicketPage() {
     </TooltipProvider>
   )
 }
-
-
-
-
