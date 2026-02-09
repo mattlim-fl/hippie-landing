@@ -1,31 +1,15 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { PageLayout, PageTitle } from "@/components/layout";
-import { getPublicAlbums, PhotoAlbum } from "@/services/photoService";
+import { getPublicAlbums } from "@/services/photoService";
 import { formatEventDate } from "@/lib/utils";
 
 const Photos = () => {
-  const [albums, setAlbums] = useState<PhotoAlbum[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchAlbums = async () => {
-      try {
-        setLoading(true);
-        const data = await getPublicAlbums('hippie');
-        setAlbums(data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch albums:', err);
-        setError('Failed to load photo albums');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAlbums();
-  }, []);
+  const { data: albums = [], isLoading: loading, error } = useQuery({
+    queryKey: ['photo-albums', 'hippie'],
+    queryFn: () => getPublicAlbums('hippie'),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   return (
     <PageLayout background="greyscale-dark">
@@ -52,7 +36,7 @@ const Photos = () => {
                 ))}
               </>
             ) : error ? (
-              <p className="text-hippie-coral text-center py-4">{error}</p>
+              <p className="text-hippie-coral text-center py-4">Failed to load photo albums</p>
             ) : albums.length === 0 ? (
               <p className="text-hippie-white/60 text-center py-4">
                 No photo albums available yet. Check back soon!

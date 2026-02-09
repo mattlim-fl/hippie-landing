@@ -19,16 +19,33 @@ export interface PhotoAlbumImage {
   created_at: string;
   archived: boolean;
   public_url?: string;
+  thumbnail_url?: string;
 }
 
 const STORAGE_BUCKET = 'venue-photos';
 
+export interface ImageTransformOptions {
+  width?: number;
+  height?: number;
+  quality?: number;
+}
+
 /**
- * Get the public URL for a photo in storage
+ * Get the public URL for a photo in storage with optional transformations
  */
-export function getPhotoPublicUrl(storagePath: string): string {
+export function getPhotoPublicUrl(storagePath: string, options?: ImageTransformOptions): string {
   const supabaseUrl = getSupabaseUrl();
-  return `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${storagePath}`;
+  const baseUrl = `${supabaseUrl}/storage/v1/object/public/${STORAGE_BUCKET}/${storagePath}`;
+
+  if (options?.width || options?.height) {
+    const params = new URLSearchParams();
+    if (options.width) params.set('width', options.width.toString());
+    if (options.height) params.set('height', options.height.toString());
+    if (options.quality) params.set('quality', options.quality.toString());
+    return `${supabaseUrl}/storage/v1/render/image/public/${STORAGE_BUCKET}/${storagePath}?${params.toString()}`;
+  }
+
+  return baseUrl;
 }
 
 /**
@@ -90,10 +107,11 @@ export async function getAlbumPhotos(albumId: string): Promise<PhotoAlbumImage[]
     throw new Error(`Failed to fetch photos: ${error.message}`);
   }
 
-  // Add public URLs to each photo
+  // Add public URLs and thumbnail URLs to each photo
   return (data as PhotoAlbumImage[]).map((photo) => ({
     ...photo,
     public_url: getPhotoPublicUrl(photo.storage_path),
+    thumbnail_url: getPhotoPublicUrl(photo.storage_path, { width: 400, quality: 75 }),
   }));
 }
 

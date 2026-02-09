@@ -1,34 +1,18 @@
-import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { PageLayout, PageTitle } from "@/components/layout";
-import { getPhotosByDate, PhotoAlbumImage } from "@/services/photoService";
+import { getPhotosByDate } from "@/services/photoService";
 import { formatEventDate } from "@/lib/utils";
 
 const PhotoGallery = () => {
   const { date } = useParams<{ date: string }>();
-  const [photos, setPhotos] = useState<PhotoAlbumImage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPhotos = async () => {
-      if (!date) return;
-      
-      try {
-        setLoading(true);
-        const data = await getPhotosByDate('hippie', date);
-        setPhotos(data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to fetch photos:', err);
-        setError('Failed to load photos');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPhotos();
-  }, [date]);
+  const { data: photos = [], isLoading: loading, error } = useQuery({
+    queryKey: ['photo-gallery', 'hippie', date],
+    queryFn: () => getPhotosByDate('hippie', date!),
+    enabled: !!date,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   const getRotationClass = (index: number) => {
     const rotations = [
@@ -70,7 +54,7 @@ const PhotoGallery = () => {
             </div>
           ) : error ? (
             <div className="text-center py-12">
-              <p className="text-hippie-coral mb-4">{error}</p>
+              <p className="text-hippie-coral mb-4">Failed to load photos</p>
               <Link
                 to="/photos"
                 className="text-hippie-gold hover:underline"
@@ -102,7 +86,7 @@ const PhotoGallery = () => {
                   `}
                 >
                   <img
-                    src={photo.public_url}
+                    src={photo.thumbnail_url || photo.public_url}
                     alt=""
                     className="w-full h-full object-cover"
                     loading="lazy"
