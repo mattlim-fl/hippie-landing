@@ -66,10 +66,6 @@ const GuestList = () => {
           <h3 className="font-display text-2xl md:text-4xl uppercase tracking-wide text-hippie-white">
             Get on the List
           </h3>
-          
-          <p className="font-body text-lg md:text-xl text-hippie-white/90 max-w-xl mx-auto">
-            Follow us on social media to stay updated on upcoming events, special nights, and get added to our exclusive guest list.
-          </p>
 
           <div className="pt-4">
             <button
@@ -78,32 +74,6 @@ const GuestList = () => {
             >
               Join Guest List
             </button>
-          </div>
-
-          {/* Additional Info */}
-          <div className="pt-12 space-y-4">
-            <p className="font-body text-hippie-white/70">
-              Open every Saturday from 9pm - 5am
-            </p>
-            <p className="font-body text-hippie-white/70">
-              Follow us for weekly updates, event announcements, and exclusive promotions
-            </p>
-          </div>
-
-          {/* 25+ Priority at Manor Section */}
-          <div className="pt-12 space-y-4">
-            <p className="font-body text-hippie-white/80 text-lg">
-              Did you know there's a 25+ list at Manor?
-            </p>
-            <div className="w-full max-w-xs mx-auto border-t border-hippie-white/30"></div>
-            <a
-              href="https://manorleederville.com/priority-entry"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block hippie-btn-primary text-lg px-8 py-3"
-            >
-              25+ Priority at Manor
-            </a>
           </div>
         </div>
 

@@ -1,18 +1,14 @@
 interface SocialLinksProps {
-  showLabel?: boolean;
-  labelClassName?: string;
   iconSize?: "sm" | "md" | "lg";
   className?: string;
 }
 
 const SOCIAL_LINKS = {
-  instagram: "https://instagram.com/hippieclub",
-  facebook: "https://facebook.com/hippieclub",
+  instagram: "https://www.instagram.com/hipeclubperth/",
+  facebook: "https://www.facebook.com/hipeclubperth/",
 } as const;
 
 const SocialLinks = ({
-  showLabel = false,
-  labelClassName = "",
   iconSize = "md",
   className = "",
 }: SocialLinksProps) => {
@@ -30,13 +26,6 @@ const SocialLinks = ({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      {showLabel && (
-        <span
-          className={`font-display text-sm text-hippie-white uppercase tracking-wider ${labelClassName}`}
-        >
-          Follow Us
-        </span>
-      )}
       <a
         href={SOCIAL_LINKS.instagram}
         target="_blank"

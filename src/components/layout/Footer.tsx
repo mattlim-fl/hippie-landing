@@ -15,21 +15,35 @@ const Footer = ({ className = "" }: FooterProps) => {
           className="max-w-32 md:max-w-40 h-auto"
         />
 
-        {/* Social Section */}
-        <SocialLinks
-          showLabel
-          labelClassName="bg-hippie-green-dark/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg"
-        />
-
-        {/* Contact Information */}
-        <div className="space-y-1 text-center">
-          <p className="font-body text-sm text-hippie-white drop-shadow-lg">
-            663 Newcastle St, Leederville WA 6060
-          </p>
-          <p className="font-body text-sm text-hippie-white drop-shadow-lg">
-            E hello@hippieclub.com
-          </p>
+        {/* Social & Email Icons */}
+        <div className="flex items-center gap-3">
+          <SocialLinks />
+          <a
+            href="mailto:hello@hippieclub.com"
+            className="w-8 h-8 rounded-full bg-hippie-green-dark flex items-center justify-center transition-transform hover:scale-110"
+            aria-label="Email us"
+          >
+            <svg
+              className="w-4 h-4 text-hippie-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
+            </svg>
+          </a>
         </div>
+
+        {/* Address */}
+        <p className="font-body text-sm text-hippie-white drop-shadow-lg text-center">
+          663 Newcastle Street Leederville
+        </p>
       </div>
     </footer>
   );
