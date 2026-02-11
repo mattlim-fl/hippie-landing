@@ -63,19 +63,25 @@ const Photos = () => {
         <div className="relative w-full aspect-video mb-8">
           {/* Venue photo */}
           <div className="w-full h-full overflow-hidden">
-            <img 
-              src="/venue-photo.png" 
-              alt="Hippie Club venue photo" 
+            <img
+              src="/venue-photo.jpg"
+              alt="Hippie Club venue photo"
               className="w-full h-full object-cover"
+              loading="lazy"
+              width={1806}
+              height={1202}
             />
           </div>
 
           {/* Spinning roundel overlay */}
           <div className="absolute top-4 right-4 w-60 h-60 md:w-80 md:h-80 aspect-square">
-            <img 
-              src="/Graphic Assets/Spin Me Right Round Roundel/The hippie Club - Spin Me Right Round Roundel A.png" 
-              alt="Spin me right round roundel" 
+            <img
+              src="/roundel.png"
+              alt="Spin me right round roundel"
               className="w-full h-full object-contain animate-spin-slow"
+              loading="lazy"
+              width={640}
+              height={640}
             />
           </div>
         </div>
