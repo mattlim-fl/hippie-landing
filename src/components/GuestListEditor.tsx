@@ -36,31 +36,20 @@ export default function GuestListEditor({
       setError(null)
       setSaved(false)
       try {
-        // Fetch booking to get max guests (ticket_quantity or guest_count)
-        const { data: booking, error: bookingError } = await supabase
-          .from('bookings')
-          .select('ticket_quantity, guest_count')
-          .eq('id', bookingId)
-          .single()
+        // Use RPC to fetch guest list (validates token server-side)
+        const { data, error: rpcError } = await supabase.rpc('get_booking_guests', {
+          p_booking_id: bookingId,
+          p_token: token || null,
+        })
 
-        if (bookingError) {
-          throw bookingError
+        if (rpcError) {
+          throw rpcError
         }
 
-        const max = booking?.ticket_quantity || booking?.guest_count || 0
-
-        // Fetch existing guest names
-        const { data: guestRows, error: guestsError } = await supabase
-          .from('booking_guests')
-          .select('guest_name')
-          .eq('booking_id', bookingId)
-          .order('created_at')
-
-        if (guestsError) {
-          throw guestsError
-        }
-
-        const existing = (guestRows || []).map((r: { guest_name: string }) => r.guest_name)
+        const row = Array.isArray(data) ? data[0] : data
+        const max = row?.max_guests || 0
+        const guestsJson = row?.guests || []
+        const existing = (guestsJson as Array<{ guest_name: string }>).map((g) => g.guest_name)
 
         if (!cancelled) {
           setMaxGuests(max)
@@ -110,29 +99,20 @@ export default function GuestListEditor({
     try {
       const cleaned = (names || []).map((n) => n.trim()).filter((n) => n.length > 0)
 
-      // Delete existing guests for this booking
-      const { error: deleteError } = await supabase
-        .from('booking_guests')
-        .delete()
-        .eq('booking_id', bookingId)
+      // Use RPC to upsert guests (validates token server-side)
+      const guestsPayload = cleaned.map((name, idx) => ({
+        guest_name: name,
+        is_organiser: idx === 0, // First guest is typically the organiser
+      }))
 
-      if (deleteError) {
-        throw deleteError
-      }
+      const { error: rpcError } = await supabase.rpc('upsert_booking_guests', {
+        p_booking_id: bookingId,
+        p_guests: guestsPayload,
+        p_token: token || null,
+      })
 
-      // Insert new guest names
-      if (cleaned.length > 0) {
-        const toInsert = cleaned.map((name) => ({
-          booking_id: bookingId,
-          guest_name: name,
-        }))
-        const { error: insertError } = await supabase
-          .from('booking_guests')
-          .insert(toInsert)
-
-        if (insertError) {
-          throw insertError
-        }
+      if (rpcError) {
+        throw rpcError
       }
 
       setSaved(true)
