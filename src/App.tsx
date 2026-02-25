@@ -8,6 +8,7 @@ import Photos from "./pages/Photos";
 import PhotoGallery from "./pages/PhotoGallery";
 import GuestList from "./pages/GuestList";
 import VenueHire from "./pages/VenueHire";
+import Contact from "./pages/Contact";
 import GroupTicketPage from "./pages/GroupTicketPage";
 import OccasionBuyPage from "./pages/OccasionBuyPage";
 import OccasionOrganiserPage from "./pages/OccasionOrganiserPage";
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/venue-hire" element={<VenueHire />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/photos/:date" element={<PhotoGallery />} />
           <Route path="/guest-list" element={<GuestList />} />
