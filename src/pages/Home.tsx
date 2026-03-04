@@ -46,14 +46,17 @@ const Home = () => {
             >
               Venue Hire at Manor
             </a>
-            <a 
-              href="https://manorleederville.com/karaoke" 
+            <a
+              href="https://manorleederville.com/karaoke"
               target="_blank"
               rel="noopener noreferrer"
               className="hippie-btn-pill text-center"
             >
               Karaoke at Manor
             </a>
+            <Link to="/contact" className="hippie-btn-pill text-center">
+              Contact
+            </Link>
           </nav>
         </section>
 
