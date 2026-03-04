@@ -2,7 +2,7 @@
  * Contact Form Service
  * Submits contact inquiries via Supabase Edge Function
  */
-import getSupabase from '../lib/supabaseClient'
+import { getSupabase } from '../lib/supabaseClient'
 
 export type ContactCategory =
   | 'lost_property'
